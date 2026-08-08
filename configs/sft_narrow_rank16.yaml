@@ -1,0 +1,44 @@
+# Stage 1 SFT, schema-specific (PLAN.md "single-database" condition, db_id
+# college_2). Run with: python scripts/train.py --config configs/sft_narrow_rank16.yaml
+#
+# Same notes as configs/sft_diverse_rank16.yaml re: HF Hub model id and
+# 8-12GB VRAM sizing. Main difference here: far less data (108 train / 11
+# valid examples vs. 8313/346), so fewer epochs' worth of steps exist in
+# total, eval/save happen more often to get a usable early-stopping signal
+# before the whole (short) run is already over, and early-stopping patience
+# is smaller for the same reason.
+
+model:
+  name_or_path: Qwen/Qwen2.5-Coder-7B-Instruct
+  load_in_4bit: true
+
+data:
+  train_file: data/sft_narrow/train.jsonl
+  valid_file: data/sft_narrow/valid.jsonl
+  max_seq_length: 1536
+
+lora:
+  rank: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj]
+
+training:
+  output_dir: runs/sft_narrow/adapters
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8
+  learning_rate: 1.0e-4
+  num_train_epochs: 15   # small dataset, needs more passes; early stopping is what actually decides when to stop
+  eval_strategy: steps
+  eval_steps: 10
+  save_strategy: steps
+  save_steps: 10
+  save_total_limit: 5
+  logging_steps: 2
+  bf16: true
+  gradient_checkpointing: true
+  report_to: none
+  early_stopping:
+    enabled: true
+    patience: 5        # stop after 5 evals (50 steps) with no eval_loss improvement
+    metric: eval_loss

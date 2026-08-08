@@ -1,0 +1,13 @@
+# torch is NOT listed here on purpose -- install it separately first, with
+# the CUDA-matched command from pytorch.org (check `nvidia-smi` for your
+# driver's supported CUDA version). See PLAN.md's "Environment / dependencies"
+# section for details. Everything below is safe to install with a plain pip
+# install -r requirements.txt after that.
+
+transformers>=4.44
+peft>=0.11
+trl>=0.12
+bitsandbytes>=0.43
+datasets>=2.19
+accelerate>=0.30
+pyyaml>=6.0

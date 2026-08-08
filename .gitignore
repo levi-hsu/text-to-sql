@@ -1,0 +1,6 @@
+
+# Local datasets and generated outputs
+spider_data/
+runs/
+*.sqlite
+.DS_Store

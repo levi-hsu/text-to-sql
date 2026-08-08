@@ -1,0 +1,58 @@
+# Stage 1 SFT, schema-agnostic (PLAN.md "many-database" condition).
+# Run with: python scripts/train.py --config configs/sft_diverse_rank16.yaml
+#
+# Replaces an earlier draft of this file written for mlx_lm_lora.train's own
+# --config format (model/train/train_mode/iters/... flags). That format is
+# now obsolete: mlx_lm_lora cannot run on Windows at all (MLX is Apple
+# Silicon-only, not a missing pip package), so the training tool changed to
+# scripts/train.py (transformers + peft + trl + bitsandbytes), and this file
+# is that tool's config schema instead.
+#
+# Sized for an 8-12GB VRAM NVIDIA GPU: 4-bit base weights (~4-4.5GB for 7B),
+# small per-step batch with gradient accumulation to reach a reasonable
+# effective batch size, gradient checkpointing to trade compute for memory.
+# If you hit CUDA OOM: lower max_seq_length first, then
+# per_device_train_batch_size (already at the floor of 1, so that means
+# raising gradient_accumulation_steps to compensate).
+
+model:
+  # HF Hub id, not a local path -- I don't have visibility into your Windows
+  # filesystem layout, so this downloads and caches via the HF hub the first
+  # time you run it. Swap in a local directory here if you'd rather manage
+  # the download yourself (e.g. via `huggingface-cli download`). Note this
+  # is NOT the same file as the MLX 4-bit checkpoint you already downloaded
+  # on the Mac (/Users/lerong/llm-models/Qwen2.5-Coder-7B-Instruct-4bit) --
+  # that's MLX-quantized and unreadable by transformers/bitsandbytes.
+  name_or_path: Qwen/Qwen2.5-Coder-7B-Instruct
+  load_in_4bit: true
+
+data:
+  train_file: data/sft_diverse/train.jsonl
+  valid_file: data/sft_diverse/valid.jsonl
+  max_seq_length: 1536
+
+lora:
+  rank: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj]
+
+training:
+  output_dir: runs/sft_diverse/adapters
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 16
+  learning_rate: 1.0e-4
+  num_train_epochs: 2
+  eval_strategy: steps
+  eval_steps: 100
+  save_strategy: steps
+  save_steps: 100
+  save_total_limit: 5
+  logging_steps: 10
+  bf16: true
+  gradient_checkpointing: true
+  report_to: none
+  early_stopping:
+    enabled: true
+    patience: 3        # stop after 3 evals (300 steps) with no eval_loss improvement
+    metric: eval_loss
