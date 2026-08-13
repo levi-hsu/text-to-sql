@@ -1,0 +1,37 @@
+# Eval config for the SFT-continuation arm (configs/bird_adapt_sft.yaml),
+# covering two of its three eval slices: Spider-dev (retention -- did
+# continuing on BIRD forget Spider competence?) and the pool-heldout slice
+# (same two schemas as training, unseen questions -- memorization check).
+# The third slice, crossdb-eval (the real transfer test), is a separate
+# config -- see configs/bird_adapt_sft_eval_crossdb.yaml -- since
+# generate_sql.py only supports one "bird" data source per config; both
+# land in the same output.run_dir under different --split values (see
+# scripts/run_bird_adapt_eval.sh).
+
+model:
+  name_or_path: /home/levi/Documents/llm/Qwen2.5-Coder-3B-Instruct
+  dtype: bfloat16
+  device: cuda
+  load_in_4bit: true
+  adapter: runs/bird_adapt_sft/adapter
+
+generation:
+  max_new_tokens: 256
+  do_sample: false
+  temperature: 1.0
+  num_beams: 1
+  batch_size: 4
+
+data:
+  spider_tables: data/spider_data/tables.json
+  spider_db_dir: data/spider_data/database
+  spider_dev: data/spider_data/dev.json
+  spider_dev_gold: data/spider_data/dev_gold.sql
+
+  bird_tables: data/bird-dev/dev_tables.json
+  bird_db_dir: data/bird-dev/dev_databases
+  bird_dev: data/bird_adapt/bird_pool_heldout_dev.json
+  bird_dev_gold: data/bird_adapt/bird_pool_heldout_gold.sql
+
+output:
+  run_dir: runs/bird_adapt_sft_eval

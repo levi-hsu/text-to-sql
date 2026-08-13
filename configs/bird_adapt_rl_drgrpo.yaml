@@ -1,0 +1,61 @@
+# RL-continue, Dr. GRPO variant. Identical to configs/bird_adapt_rl.yaml
+# (the original GRPO run) in every field except `algo` and the output/
+# monitor paths -- same starting checkpoint (runs/sft_qwen2.5coder3b/adapter),
+# same training data (data/bird_adapt/bird_train_pool.jsonl, the full
+# 122-row pool, NOT resampled), same num_generations/lr/beta/temperature/
+# max_steps/reward settings as bird_adapt_rl.yaml. Only train_rl.py's algo
+# dispatch differs: GRPOConfig(scale_rewards=False, loss_type="dr_grpo")
+# (Liu et al. 2025 -- no std division, no length-normalization bias)
+# instead of plain GRPO. See train_rl.py's algo=="dr_grpo" branch for the
+# implementation and its unverified-against-a-real-run caveats.
+
+algo: dr_grpo
+
+model:
+  name_or_path: /home/levi/Documents/llm/Qwen2.5-Coder-3B-Instruct
+  dtype: bfloat16
+  sft_adapter: runs/sft_qwen2.5coder3b/adapter   # SAME shared start as bird_adapt_rl.yaml
+
+data:
+  train_jsonl: data/bird_adapt/bird_train_pool.jsonl   # SAME file, unchanged
+  tables: data/bird-dev/dev_tables.json
+  db_dir: data/bird-dev/dev_databases
+  max_prompt_length: 1024
+  max_completion_length: 256
+
+grpo:
+  num_generations: 4
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 8
+  temperature: 1.3
+  learning_rate: 1.0e-5
+  beta: 0.04
+  num_train_epochs: 1
+  max_steps: 40
+  use_vllm: false
+  logging_steps: 2
+  save_strategy: steps
+  save_steps: 10
+  save_total_limit: 4
+  bf16: true
+  gradient_checkpointing: true
+  optim: paged_adamw_8bit
+  report_to: none
+
+reward:
+  partial_credit_executes_wrong_result: 0.1
+
+output:
+  run_dir: runs/bird_adapt_rl_drgrpo
+
+monitor:
+  eval_steps: 10
+  heldout_jsonl: data/bird_adapt/bird_pool_heldout.jsonl
+  heldout_size: 31
+  max_degenerate_rate: 0.15
+  min_distinct_ratio: 0.20
+  max_hallucination_rate: 0.05
+  log_jsonl: runs/bird_adapt_rl_drgrpo/health_log.jsonl
+  early_stop_enabled: true
+  early_stop_after_checks: 3
+  early_stop_frac_zero_std_threshold: 0.9

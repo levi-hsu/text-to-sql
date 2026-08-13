@@ -1,0 +1,86 @@
+# RL-continue-v2, phase 1 of 2 -- curriculum warm-up on only the "reachable"
+# (mixed-difficulty) subset of the fixed 122-example BIRD pool, per the plan
+# to make RL-continue win over SFT-continue under the SAME starting
+# checkpoint and SAME 122-example data budget (no more data, no
+# num_generations increase -- only how training is scheduled and rewarded).
+#
+# Run scripts/bucket_bird_pool_by_difficulty.py FIRST -- it generates
+# data/bird_adapt/bird_train_pool_reachable.jsonl by sampling 4 completions
+# per pool example with this SAME starting checkpoint and keeping only
+# examples where 1-3 of the 4 were correct (genuine within-group reward
+# variance for GRPO to learn from -- "hard" examples, 0/4 correct, and
+# "easy" examples, 4/4 correct, both produce zero-variance groups and
+# contribute nothing, which is exactly why runs/bird_adapt_rl's health_log
+# stayed at frac_reward_zero_std ~0.3-0.7 the whole run with train_reward_mean
+# stuck at 0.05-0.20 -- most of that pool was one of those two, not "mixed").
+#
+# Starts from runs/sft_qwen2.5coder3b/adapter -- the SAME checkpoint
+# configs/bird_adapt_sft.yaml already used. SFT-continue's results are NOT
+# being redone; this whole curriculum experiment only touches RL-continue.
+#
+# num_generations stays at 4, unchanged, per an explicit constraint on this
+# design: the fix here is a smarter use of the same sampling budget, not a
+# bigger one.
+#
+# reward.partial_credit_mode=graduated instead of flat -- see
+# rl_reward.py's module docstring. Flat mode gives every wrong-but-executing
+# completion an identical 0.1, which doesn't help distinguish a near-miss
+# from a wildly wrong query when true correctness is rare (as it was on
+# this pool). Graduated mode scales the wrong-but-executing bonus by actual
+# row-overlap with gold, strictly bounded below graduated_max so a correct
+# completion always wins regardless of overlap.
+#
+# Phase 2 (configs/bird_adapt_rl_v2_phase2.yaml) continues from this
+# phase's output adapter, training on the FULL 122-example pool -- the
+# reachable-only subset here is a warm-up, not the whole curriculum.
+
+model:
+  name_or_path: /home/levi/Documents/llm/Qwen2.5-Coder-3B-Instruct
+  dtype: bfloat16
+  sft_adapter: runs/sft_qwen2.5coder3b/adapter   # SAME shared start as SFT-continue
+
+data:
+  train_jsonl: data/bird_adapt/bird_train_pool_reachable.jsonl   # from bucket_bird_pool_by_difficulty.py
+  tables: data/bird-dev/dev_tables.json
+  db_dir: data/bird-dev/dev_databases
+  max_prompt_length: 1024
+  max_completion_length: 256
+
+grpo:
+  num_generations: 4          # unchanged -- see header
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 8
+  temperature: 1.3
+  learning_rate: 1.0e-5
+  beta: 0.04
+  num_train_epochs: 1
+  max_steps: 50                # ~60% of the ~80-step total budget across both phases
+  use_vllm: false
+  logging_steps: 2
+  save_strategy: steps
+  save_steps: 10
+  save_total_limit: 6
+  bf16: true
+  gradient_checkpointing: true
+  optim: paged_adamw_8bit
+  report_to: none
+
+reward:
+  partial_credit_mode: graduated
+  graduated_floor: 0.02
+  graduated_max: 0.3
+
+output:
+  run_dir: runs/bird_adapt_rl_v2_phase1
+
+monitor:
+  eval_steps: 10
+  heldout_jsonl: data/bird_adapt/bird_pool_heldout.jsonl   # unused-in-training slice, unchanged from v1
+  heldout_size: 31
+  max_degenerate_rate: 0.15
+  min_distinct_ratio: 0.20
+  max_hallucination_rate: 0.05
+  log_jsonl: runs/bird_adapt_rl_v2_phase1/health_log.jsonl
+  early_stop_enabled: true
+  early_stop_after_checks: 3
+  early_stop_frac_zero_std_threshold: 0.9

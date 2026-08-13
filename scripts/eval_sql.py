@@ -1,178 +1,170 @@
+"""Execution-accuracy (EX) evaluator, the primary metric in plan.md.
+
+For each (predicted SQL, gold SQL) pair, both are executed against the
+example's SQLite database and their result sets are compared. A prediction
+counts as correct if it executes without error and returns the same result
+as the gold query. Comparison is order-insensitive by default, except when
+the gold query itself contains an ORDER BY clause, in which case row order
+is required to match too -- this mirrors the convention used by Spider's
+own evaluation scripts and by DIN-SQL/DAIL-SQL's execution-accuracy code.
+
+Each database is opened read-only (SQLite URI mode=ro), so a malformed or
+adversarial prediction (e.g. an INSERT or DROP TABLE) cannot mutate the
+on-disk .sqlite files; it just fails to execute and is scored as incorrect.
+
+Usage:
+  python scripts/eval_sql.py \
+      --pred runs/baseline_qwen2.5coder3b/spider_dev_preds.sql \
+      --gold data/spider_data/dev_gold.sql \
+      --db-dir data/spider_data/database \
+      --output runs/baseline_qwen2.5coder3b/spider_dev_results.json
 """
-Execution accuracy (EX) verifier: run a predicted SQL query and a gold SQL
-query against the same SQLite database, and check whether they return the
-same result.
-
-Known simplification, stated up front: this compares result rows as a
-row-order-insensitive multiset of tuples (so ORDER BY differences don't
-matter), but it is column-order-sensitive (SELECT b, a is NOT treated as
-equal to SELECT a, b even though they contain the same information). Spider's
-own official evaluator does a more elaborate SQL-structure-aware comparison
-to handle that case and a few others (e.g. semantically-equivalent but
-differently-shaped queries). This is a deliberate simplification to keep the
-verifier small, fast, and dependency-free, appropriate for reward computation
-at RL training scale; if a precise apples-to-apples comparison against
-published Spider EX numbers is needed later, swap in the official Spider
-evaluation script (github.com/taoyds/spider, evaluation.py) instead.
-
-Also used as the RL reward function later (PLAN.md Stage 2): a binary EX
-score from execution_match() is exactly the "binary execution accuracy, no
-reward shaping" reward described there.
-
-Cross-platform note: the query timeout used to be implemented with
-signal.SIGALRM, which is POSIX-only and does not exist on Windows (this was
-a real bug when the project was Mac-only; fixed here using a
-threading.Timer that calls sqlite3.Connection.interrupt() instead, which
-works identically on macOS, Linux, and Windows). The database file URI is
-also now built with Path.as_uri() rather than manual string formatting,
-since a naive f"file:{path}" breaks on Windows paths (backslashes, drive
-letters) but as_uri() handles both platforms correctly.
-
-Usage as a library:
-    from eval_sql import execution_match
-    ok, detail = execution_match(db_path, gold_sql, pred_sql)
-
-Usage as a CLI, scoring a predictions file against an eval JSONL produced by
-prepare_spider_data.py:
-    python3 scripts/eval_sql.py \
-        --eval-file data/eval/dev.jsonl \
-        --pred-file predictions.jsonl \
-        --spider-dir spider_data
-"""
-
-from __future__ import annotations
 
 import argparse
 import json
+import os
+import signal
 import sqlite3
-import threading
 from collections import Counter
-from pathlib import Path
+from typing import List, Optional, Tuple
+
+from data_utils import load_gold_sql
 
 
 class QueryTimeout(Exception):
     pass
 
 
-def _run_query(db_path: Path, sql: str, timeout_s: float) -> list[tuple]:
-    """Execute sql against db_path, return all result rows as a list of
-    tuples. Raises on SQL error or timeout; caller is responsible for
-    catching. Cross-platform (no signal.SIGALRM, which doesn't exist on
-    Windows): a background timer calls conn.interrupt() if the query is
-    still running after timeout_s seconds, which sqlite3 turns into an
-    OperationalError inside the running query."""
-    # Open read-only so a buggy/malicious generated query can't mutate the
-    # shared database file. as_uri() produces a correct file:// URI on both
-    # POSIX and Windows (drive letters, backslashes handled correctly),
-    # unlike a manual f"file:{path}" string.
-    uri = db_path.resolve().as_uri() + "?mode=ro"
-    conn = sqlite3.connect(uri, uri=True, timeout=timeout_s)
-    timed_out = threading.Event()
+def _timeout_handler(signum, frame):
+    raise QueryTimeout()
 
-    def _watchdog():
-        timed_out.set()
-        conn.interrupt()
 
-    timer = threading.Timer(timeout_s, _watchdog)
-    timer.start()
+def get_connection(db_dir: str, db_id: str, cache: dict) -> sqlite3.Connection:
+    if db_id not in cache:
+        db_path = os.path.join(db_dir, db_id, f"{db_id}.sqlite")
+        if not os.path.exists(db_path):
+            raise FileNotFoundError(f"No sqlite file for db_id '{db_id}' at {db_path}")
+        uri = f"file:{db_path}?mode=ro"
+        cache[db_id] = sqlite3.connect(uri, uri=True, check_same_thread=False)
+    return cache[db_id]
+
+
+def execute_query(
+    conn: sqlite3.Connection, sql: str, timeout_sec: int
+) -> Tuple[Optional[List[tuple]], Optional[str]]:
+    """Run sql, returning (rows, None) on success or (None, error_str) on failure."""
+    old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
+    signal.alarm(timeout_sec)
     try:
         cur = conn.cursor()
         cur.execute(sql)
         rows = cur.fetchall()
-        return [tuple(r) for r in rows]
-    except sqlite3.OperationalError:
-        if timed_out.is_set():
-            raise QueryTimeout()
-        raise
-    finally:
-        timer.cancel()
-        conn.close()
-
-
-def execution_match(db_path: Path, gold_sql: str, pred_sql: str, timeout_s: float = 5.0) -> tuple[bool, str]:
-    """Returns (is_match, detail). is_match is False (not an exception) for
-    any failure mode: predicted SQL doesn't parse/execute, times out, or
-    executes but returns a different result set than gold."""
-    try:
-        gold_rows = _run_query(db_path, gold_sql, timeout_s)
-    except Exception as e:
-        # Gold query itself failing means a data/script bug, not a model
-        # failure -- surface it loudly rather than silently scoring 0.
-        return False, f"GOLD_QUERY_ERROR: {e!r}"
-
-    try:
-        pred_rows = _run_query(db_path, pred_sql, timeout_s)
+        return rows, None
     except QueryTimeout:
-        return False, "PRED_TIMEOUT"
+        return None, "timeout"
     except Exception as e:
-        return False, f"PRED_ERROR: {e!r}"
-
-    if Counter(gold_rows) == Counter(pred_rows):
-        return True, "MATCH"
-    return False, f"MISMATCH: gold_rows={len(gold_rows)} pred_rows={len(pred_rows)}"
-
-
-def extract_sql(model_output: str) -> str:
-    """Best-effort cleanup of raw model output into a single SQL statement:
-    strip markdown code fences if the model added them anyway, take text up
-    to (and including) the first semicolon if present."""
-    text = model_output.strip()
-    if text.startswith("```"):
-        text = text.strip("`")
-        if text.lower().startswith("sql"):
-            text = text[3:]
-    text = text.strip()
-    if ";" in text:
-        text = text[: text.index(";") + 1]
-    return text.strip()
+        return None, f"{type(e).__name__}: {e}"
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, old_handler)
 
 
-def score_file(eval_file: Path, pred_file: Path, spider_dir: Path) -> dict:
-    eval_records = [json.loads(l) for l in open(eval_file, encoding="utf-8")]
-    pred_records = [json.loads(l) for l in open(pred_file, encoding="utf-8")]
-    if len(eval_records) != len(pred_records):
-        raise SystemExit(
-            f"eval file has {len(eval_records)} records, pred file has {len(pred_records)} -- "
-            "must be line-aligned, one prediction per eval example, same order."
-        )
-
-    n_correct = 0
-    per_db = Counter()
-    per_db_correct = Counter()
-    details = []
-    for eval_r, pred_r in zip(eval_records, pred_records):
-        db_path = spider_dir / eval_r["db_path"]
-        pred_sql = extract_sql(pred_r["prediction"])
-        ok, detail = execution_match(db_path, eval_r["gold_sql"], pred_sql)
-        per_db[eval_r["db_id"]] += 1
-        if ok:
-            n_correct += 1
-            per_db_correct[eval_r["db_id"]] += 1
-        details.append({"db_id": eval_r["db_id"], "question": eval_r["question"], "match": ok, "detail": detail})
-
-    ex = n_correct / len(eval_records) if eval_records else 0.0
-    return {
-        "n": len(eval_records),
-        "n_correct": n_correct,
-        "execution_accuracy": ex,
-        "per_db_accuracy": {db: per_db_correct[db] / per_db[db] for db in per_db},
-        "details": details,
-    }
+def rows_match(gold_rows: List[tuple], pred_rows: List[tuple], order_matters: bool) -> bool:
+    if order_matters:
+        return gold_rows == pred_rows
+    try:
+        return sorted(gold_rows) == sorted(pred_rows)
+    except TypeError:
+        # Mixed/unorderable types (e.g. None alongside str in the same column):
+        # fall back to a multiset comparison over string reprs of each row.
+        return Counter(map(str, gold_rows)) == Counter(map(str, pred_rows))
 
 
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--eval-file", required=True, help="JSONL from prepare_spider_data.py, e.g. data/eval/dev.jsonl")
-    ap.add_argument("--pred-file", required=True, help="JSONL, one line per eval example, each with a 'prediction' field")
-    ap.add_argument("--spider-dir", default="spider_data", help="Root of the raw Spider download (contains database/)")
-    ap.add_argument("--out", default=None, help="Optional path to write full per-example results as JSON")
-    args = ap.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--pred", required=True, help="Predictions file, one SQL query per line.")
+    parser.add_argument("--gold", required=True, help="Gold file: 'SQL<TAB>db_id' per line.")
+    parser.add_argument("--db-dir", required=True, help="Directory of per-db_id sqlite files.")
+    parser.add_argument("--timeout", type=int, default=10, help="Per-query execution timeout, seconds.")
+    parser.add_argument("--output", default=None, help="Where to write the JSON summary + per-example results.")
+    args = parser.parse_args()
 
-    result = score_file(Path(args.eval_file), Path(args.pred_file), Path(args.spider_dir))
-    print(f"n={result['n']}  n_correct={result['n_correct']}  execution_accuracy={result['execution_accuracy']:.4f}")
-    if args.out:
-        Path(args.out).write_text(json.dumps(result, indent=2))
-        print(f"Full results written to {args.out}")
+    gold_pairs = load_gold_sql(args.gold)
+    with open(args.pred, "r") as f:
+        pred_queries = [line.strip() for line in f if line.strip()]
+
+    if len(pred_queries) != len(gold_pairs):
+        raise ValueError(
+            f"Line count mismatch: {len(pred_queries)} predictions vs {len(gold_pairs)} gold "
+            "queries. generate_sql.py must produce exactly one line per dev.json example, in "
+            "the same order as the *_gold.sql file."
+        )
+
+    conn_cache: dict = {}
+    results = []
+    n_correct = 0
+    n_pred_exec_error = 0
+    n_gold_exec_error = 0
+
+    for i, ((gold_sql, db_id), pred_sql) in enumerate(zip(gold_pairs, pred_queries)):
+        conn = get_connection(args.db_dir, db_id, conn_cache)
+        order_matters = "order by" in gold_sql.lower()
+
+        gold_rows, gold_err = execute_query(conn, gold_sql, args.timeout)
+        pred_rows, pred_err = execute_query(conn, pred_sql, args.timeout)
+
+        if gold_err is not None:
+            n_gold_exec_error += 1
+        if pred_err is not None:
+            n_pred_exec_error += 1
+
+        if gold_err is None and pred_err is None:
+            match = rows_match(gold_rows, pred_rows, order_matters)
+        else:
+            match = False
+
+        if match:
+            n_correct += 1
+
+        results.append(
+            {
+                "index": i,
+                "db_id": db_id,
+                "gold_sql": gold_sql,
+                "pred_sql": pred_sql,
+                "gold_error": gold_err,
+                "pred_error": pred_err,
+                "match": match,
+            }
+        )
+
+    for conn in conn_cache.values():
+        conn.close()
+
+    total = len(results)
+    ex_accuracy = n_correct / total if total else 0.0
+
+    summary = {
+        "total": total,
+        "correct": n_correct,
+        "execution_accuracy": ex_accuracy,
+        "pred_execution_errors": n_pred_exec_error,
+        "gold_execution_errors": n_gold_exec_error,
+    }
+
+    print(f"Execution accuracy: {n_correct}/{total} = {ex_accuracy:.4f}")
+    print(f"Predictions that failed to execute: {n_pred_exec_error}/{total}")
+    if n_gold_exec_error:
+        print(
+            f"WARNING: {n_gold_exec_error} gold queries failed to execute "
+            "-- check for a data/DB mismatch, this is not a model error."
+        )
+
+    if args.output:
+        os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
+        with open(args.output, "w") as f:
+            json.dump({"summary": summary, "results": results}, f, indent=2)
+        print(f"Wrote detailed results to {args.output}")
 
 
 if __name__ == "__main__":

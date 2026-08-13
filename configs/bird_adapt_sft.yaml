@@ -1,0 +1,54 @@
+# Experiment 2, SFT-continuation arm: after SFT on Spider, continue
+# training (SFT, not RL -- see configs/bird_adapt_rl.yaml for the other
+# half of this comparison) on the small BIRD-dev pool built by
+# scripts/build_bird_adapt_data.py (debit_card_specializing +
+# california_schools, 122 train rows after the 80/20 pool-heldout split).
+#
+# Starts from runs/sft_qwen2.5coder3b/adapter -- the SAME checkpoint
+# configs/bird_adapt_rl.yaml starts from, deliberately NOT checkpoint-500
+# (that was a v2-only intervention for the Spider-overfitting question).
+# Here the only thing that should differ between the SFT-continuation and
+# RL-continuation arms is the continuation method itself.
+#
+# learning_rate is well below configs/sft.yaml's 2e-4 for the same reason
+# configs/rl.yaml's is below it: this continues an already-competent
+# policy, not training from scratch, so a large step risks collapsing it
+# rather than refining it. num_train_epochs=3 matches the original SFT
+# arm's epoch count for comparability, but over a pool 16x smaller (122 vs
+# 2000 rows), so total steps are far fewer (~90 vs ~750) -- save_steps is
+# set tight and save_total_limit high enough to keep every checkpoint
+# across the run, since with only 122 examples this can overfit fast (see
+# the overtraining discussion this project already had for the main SFT
+# arm) and there's no live validation signal wired into train_sft.py, so
+# checkpoint selection has to happen post-hoc against
+# data/bird_adapt/bird_pool_heldout_dev.json (same-schema, unseen-question
+# memorization check) and bird_crossdb_eval_dev.json (the real transfer
+# test) -- see scripts/run_bird_adapt_eval.sh.
+
+model:
+  name_or_path: /home/levi/Documents/llm/Qwen2.5-Coder-3B-Instruct
+  dtype: bfloat16
+  resume_adapter: runs/sft_qwen2.5coder3b/adapter   # continue THIS adapter, not a fresh one
+
+data:
+  sft_data_out: data/bird_adapt/bird_train_pool.jsonl   # from scripts/build_bird_adapt_data.py
+  max_seq_length: 1024
+
+training:
+  output_dir: runs/bird_adapt_sft
+  num_train_epochs: 3
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 4   # effective batch 4 -- smaller than configs/sft.yaml's 8
+                                     # since the pool itself is tiny (122 rows)
+  learning_rate: 5.0e-5
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.03
+  logging_steps: 5
+  save_strategy: steps
+  save_steps: 10          # ~90 total steps expected (122 rows / eff. batch 4 * 3 epochs) -> ~9 checkpoints
+  save_total_limit: 10    # keep all of them -- see header on why checkpoint selection is post-hoc here
+  bf16: true
+  gradient_checkpointing: true
+  optim: paged_adamw_8bit
+  dataloader_num_workers: 2
+  report_to: none

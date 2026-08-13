@@ -1,0 +1,32 @@
+# Eval config for the RL arm (see plan.md, "Arms" -> "RL arm"). Mirrors
+# configs/sft_eval.yaml exactly except for the adapter and output dir, so
+# the baseline/SFT/RL comparison only varies the adapter being evaluated,
+# same generation settings (greedy) across all three arms.
+
+model:
+  name_or_path: /home/levi/Documents/llm/Qwen2.5-Coder-3B-Instruct
+  dtype: bfloat16
+  device: cuda
+  load_in_4bit: true
+  adapter: runs/rl_qwen2.5coder3b/adapter
+
+generation:
+  max_new_tokens: 256
+  do_sample: false
+  temperature: 1.0
+  num_beams: 1
+  batch_size: 4
+
+data:
+  spider_tables: data/spider_data/tables.json
+  spider_db_dir: data/spider_data/database
+  spider_dev: data/spider_data/dev.json
+  spider_dev_gold: data/spider_data/dev_gold.sql
+
+  bird_tables: data/bird-dev/dev_tables.json
+  bird_db_dir: data/bird-dev/dev_databases
+  bird_dev: data/bird-dev/dev.json
+  bird_dev_gold: data/bird-dev/dev.sql
+
+output:
+  run_dir: runs/rl_qwen2.5coder3b_eval

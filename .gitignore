@@ -1,6 +1,10 @@
 
 # Local datasets and generated outputs
-spider_data/
+data/spider_data/
+data/bird-dev/
+spider.zip
 runs/
 *.sqlite
 .DS_Store
+__pycache__/
+*.pyc

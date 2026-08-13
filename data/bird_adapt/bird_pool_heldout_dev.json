@@ -1,0 +1,250 @@
+[
+  {
+    "question_id": 1517,
+    "db_id": "debit_card_specializing",
+    "question": "For the earliest customer, what segment did he/she have?",
+    "evidence": "",
+    "SQL": "SELECT T2.Segment FROM transactions_1k AS T1 INNER JOIN customers AS T2 ON T1.CustomerID = T2.CustomerID ORDER BY Date ASC LIMIT 1",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 1512,
+    "db_id": "debit_card_specializing",
+    "question": "Which customer paid the most in 2012/8/25?",
+    "evidence": "'2012/8/25' can be represented by '2012-08-25'",
+    "SQL": "SELECT CustomerID FROM transactions_1k WHERE Date = '2012-08-25' GROUP BY CustomerID ORDER BY SUM(Price) DESC LIMIT 1",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 1529,
+    "db_id": "debit_card_specializing",
+    "question": "What is the amount spent by customer \"38508\" at the gas stations? How much had the customer spent in January 2012?",
+    "evidence": "January 2012 refers to the Date value = '201201'",
+    "SQL": "SELECT SUM(T1.Price) , SUM(IIF(T3.Date = '201201', T1.Price, 0)) FROM transactions_1k AS T1 INNER JOIN gasstations AS T2 ON T1.GasStationID = T2.GasStationID INNER JOIN yearmonth AS T3 ON T1.CustomerID = T3.CustomerID WHERE T1.CustomerID = '38508'",
+    "difficulty": "moderate"
+  },
+  {
+    "question_id": 39,
+    "db_id": "california_schools",
+    "question": "What is the average number of test takers from Fresno schools that opened between 1/1/1980 and 12/31/1980?",
+    "evidence": "between 1/1/1980 and 12/31/1980 means the year = 1980",
+    "SQL": "SELECT AVG(T1.NumTstTakr) FROM satscores AS T1 INNER JOIN schools AS T2 ON T1.cds = T2.CDSCode WHERE strftime('%Y', T2.OpenDate) = '1980' AND T2.County = 'Fresno'",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 67,
+    "db_id": "california_schools",
+    "question": "What is the total amount of Community College District closure in 1989 in the city of San Francisco?",
+    "evidence": "",
+    "SQL": "SELECT COUNT(School) FROM schools WHERE strftime('%Y', ClosedDate) = '1989' AND City = 'San Francisco' AND DOCType = 'Community College District'",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 49,
+    "db_id": "california_schools",
+    "question": "Which different county has the most number of closed schools? Please provide the name of each school as well as the closure date.",
+    "evidence": "Closure date and closed date are synonyms; 'Closed' was mentioned in schools.StatusType.",
+    "SQL": "SELECT DISTINCT County, School, ClosedDate FROM schools WHERE County = ( SELECT County FROM schools WHERE StatusType = 'Closed' GROUP BY County ORDER BY COUNT(School) DESC LIMIT 1 ) AND StatusType = 'Closed' AND school IS NOT NULL",
+    "difficulty": "moderate"
+  },
+  {
+    "question_id": 1504,
+    "db_id": "debit_card_specializing",
+    "question": "What is the average total price of the transactions taken place in January, 2012?",
+    "evidence": "In January, 2012 means Date contains '2012-01'",
+    "SQL": "SELECT AVG(Amount) FROM transactions_1k WHERE Date LIKE '2012-01%'",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 1525,
+    "db_id": "debit_card_specializing",
+    "question": "What is the percentage of the customers who used EUR in 2012/8/25?",
+    "evidence": "'2012/8/25' can be represented by '2012-08-25'",
+    "SQL": "SELECT CAST(SUM(IIF(T2.Currency = 'EUR', 1, 0)) AS FLOAT) * 100 / COUNT(T1.CustomerID) FROM transactions_1k AS T1 INNER JOIN customers AS T2 ON T1.CustomerID = T2.CustomerID WHERE T1.Date = '2012-08-25'",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 1481,
+    "db_id": "debit_card_specializing",
+    "question": "What is the difference in the annual average consumption of the customers with the least amount of consumption paid in CZK for 2013 between SME and LAM, LAM and KAM, and KAM and SME?",
+    "evidence": "annual average consumption of customer with the lowest consumption in each segment = total consumption per year / the number of customer with lowest consumption in each segment; Difference in annual average = SME's annual average - LAM's annual average; Difference in annual average = LAM's annual average - KAM's annual average; Year 2013 can be presented as Between 201301 And 201312; The first 4 strings of the Date values in the yearmonth table can represent year.",
+    "SQL": "SELECT CAST(SUM(IIF(T1.Segment = 'SME', T2.Consumption, 0)) AS REAL) / COUNT(T1.CustomerID) - CAST(SUM(IIF(T1.Segment = 'LAM', T2.Consumption, 0)) AS REAL) / COUNT(T1.CustomerID) , CAST(SUM(IIF(T1.Segment = 'LAM', T2.Consumption, 0)) AS REAL) / COUNT(T1.CustomerID) - CAST(SUM(IIF(T1.Segment = 'KAM', T2.Consumption, 0)) AS REAL) / COUNT(T1.CustomerID) , CAST(SUM(IIF(T1.Segment = 'KAM', T2.Consumption, 0)) AS REAL) / COUNT(T1.CustomerID) - CAST(SUM(IIF(T1.Segment = 'SME', T2.Consumption, 0)) AS REAL) / COUNT(T1.CustomerID) FROM customers AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID WHERE T1.Currency = 'CZK' AND T2.Consumption = ( SELECT MIN(Consumption) FROM yearmonth ) AND T2.Date BETWEEN 201301 AND 201312",
+    "difficulty": "challenging"
+  },
+  {
+    "question_id": 69,
+    "db_id": "california_schools",
+    "question": "Please provide the National Center for Educational Statistics school district identification number for all schools with a School Ownership Code that are part of the State Special Schools.",
+    "evidence": "State Special Schools means that SOC = 31.",
+    "SQL": "SELECT NCESDist FROM schools WHERE SOC = 31",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 1530,
+    "db_id": "debit_card_specializing",
+    "question": "Which are the top five best selling products? Please state the full name of them.",
+    "evidence": "Description of products contains full name",
+    "SQL": "SELECT T2.Description FROM transactions_1k AS T1 INNER JOIN products AS T2 ON T1.ProductID = T2.ProductID ORDER BY T1.Amount DESC LIMIT 5",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 18,
+    "db_id": "california_schools",
+    "question": "How many schools in Fresno (directly funded) have number of test takers not more than 250?",
+    "evidence": "",
+    "SQL": "SELECT COUNT(T1.CDSCode) FROM frpm AS T1 INNER JOIN satscores AS T2 ON T1.CDSCode = T2.cds WHERE T1.`Charter Funding Type` = 'Directly funded' AND T1.`County Name` = 'Fresno' AND T2.NumTstTakr <= 250",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 1511,
+    "db_id": "debit_card_specializing",
+    "question": "For the customers who paid in the euro, what is their average total price of the transactions?",
+    "evidence": "",
+    "SQL": "SELECT AVG(T1.Price) FROM transactions_1k AS T1 INNER JOIN gasstations AS T2 ON T1.GasStationID = T2.GasStationID INNER JOIN customers AS T3 ON T1.CustomerID = T3.CustomerID WHERE T3.Currency = 'EUR'",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 1500,
+    "db_id": "debit_card_specializing",
+    "question": "Please list the product description of the products consumed in September, 2013.",
+    "evidence": "September 2013 refers to 201309; The first 4 strings of the Date values in the yearmonth table can represent year; The 5th and 6th string of the date can refer to month.",
+    "SQL": "SELECT T3.Description FROM transactions_1k AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID INNER JOIN products AS T3 ON T1.ProductID = T3.ProductID WHERE T2.Date = '201309'",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 1477,
+    "db_id": "debit_card_specializing",
+    "question": "Which year recorded the most gas use paid in EUR?",
+    "evidence": "",
+    "SQL": "SELECT SUBSTRING(T2.Date, 1, 4) FROM customers AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID WHERE T1.Currency = 'EUR' GROUP BY SUBSTRING(T2.Date, 1, 4) ORDER BY SUM(T2.Consumption) DESC LIMIT 1",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 0,
+    "db_id": "california_schools",
+    "question": "What is the highest eligible free rate for K-12 students in the schools in Alameda County?",
+    "evidence": "Eligible free rate for K-12 = `Free Meal Count (K-12)` / `Enrollment (K-12)`",
+    "SQL": "SELECT `Free Meal Count (K-12)` / `Enrollment (K-12)` FROM frpm WHERE `County Name` = 'Alameda' ORDER BY (CAST(`Free Meal Count (K-12)` AS REAL) / `Enrollment (K-12)`) DESC LIMIT 1",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 1513,
+    "db_id": "debit_card_specializing",
+    "question": "Which country's gas station had the first paid cusomer in 2012/8/25?",
+    "evidence": "'2012/8/25' can be represented by '2012-08-25'",
+    "SQL": "SELECT T2.Country FROM transactions_1k AS T1 INNER JOIN gasstations AS T2 ON T1.GasStationID = T2.GasStationID WHERE T1.Date = '2012-08-25' ORDER BY T1.Time DESC LIMIT 1",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 42,
+    "db_id": "california_schools",
+    "question": "What is the type of education offered in the school who scored the highest average in Math?",
+    "evidence": "",
+    "SQL": "SELECT T2.EdOpsName FROM satscores AS T1 INNER JOIN schools AS T2 ON T1.cds = T2.CDSCode ORDER BY T1.AvgScrMath DESC LIMIT 1",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 72,
+    "db_id": "california_schools",
+    "question": "How many students from the ages of 5 to 17 are enrolled at the State Special School school in Fremont for the 2014-2015 academic year?",
+    "evidence": "State Special School means EdOpsCode = 'SSS'",
+    "SQL": "SELECT T1.`Enrollment (Ages 5-17)` FROM frpm AS T1 INNER JOIN schools AS T2 ON T1.CDSCode = T2.CDSCode WHERE T2.EdOpsCode = 'SSS' AND T2.City = 'Fremont' AND T1.`Academic Year` BETWEEN 2014 AND 2015",
+    "difficulty": "moderate"
+  },
+  {
+    "question_id": 30,
+    "db_id": "california_schools",
+    "question": "Which cities have the top 5 lowest enrollment number for students in grades 1 through 12?",
+    "evidence": "K-12 refers to students in grades 1 through 12.",
+    "SQL": "SELECT T2.City FROM frpm AS T1 INNER JOIN schools AS T2 ON T1.CDSCode = T2.CDSCode GROUP BY T2.City ORDER BY SUM(T1.`Enrollment (K-12)`) ASC LIMIT 5",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 88,
+    "db_id": "california_schools",
+    "question": "What is the administrator's email address for the school with the highest number of test takers who received SAT scores of at least 1500?Provide the name of the school.",
+    "evidence": "",
+    "SQL": "SELECT T2.AdmEmail1, T2.School FROM satscores AS T1 INNER JOIN schools AS T2 ON T1.cds = T2.CDSCode ORDER BY T1.NumGE1500 DESC LIMIT 1",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 2,
+    "db_id": "california_schools",
+    "question": "Please list the zip code of all the charter schools in Fresno County Office of Education.",
+    "evidence": "Charter schools refers to `Charter School (Y/N)` = 1 in the table fprm",
+    "SQL": "SELECT T2.Zip FROM frpm AS T1 INNER JOIN schools AS T2 ON T1.CDSCode = T2.CDSCode WHERE T1.`District Name` = 'Fresno County Office of Education' AND T1.`Charter School (Y/N)` = 1",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 1506,
+    "db_id": "debit_card_specializing",
+    "question": "Please list the product descriptions of the transactions taken place in the gas stations in the Czech Republic.",
+    "evidence": "Czech Republic can be represented as the Country value in the gasstations table is 'CZE'; ",
+    "SQL": "SELECT DISTINCT T3.Description FROM transactions_1k AS T1 INNER JOIN gasstations AS T2 ON T1.GasStationID = T2.GasStationID INNER JOIN products AS T3 ON T1.ProductID = T3.ProductID WHERE T2.Country = 'CZE'",
+    "difficulty": "moderate"
+  },
+  {
+    "question_id": 54,
+    "db_id": "california_schools",
+    "question": "Please specify all of the schools and their related mailing zip codes that are under Avetik Atoian's administration.",
+    "evidence": "",
+    "SQL": "SELECT School, MailZip FROM schools WHERE AdmFName1 = 'Avetik' AND AdmLName1 = 'Atoian'",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 76,
+    "db_id": "california_schools",
+    "question": "What is the city location of the high school level school with Lunch Provision 2 whose lowest grade is 9 and the highest grade is 12 in the county of Merced?",
+    "evidence": "High school can be represented as EILCode = 'HS'",
+    "SQL": "SELECT T2.City FROM frpm AS T1 INNER JOIN schools AS T2 ON T1.CDSCode = T2.CDSCode WHERE T1.`NSLP Provision Status` = 'Lunch Provision 2' AND T2.County = 'Merced' AND T1.`Low Grade` = 9 AND T1.`High Grade` = 12 AND T2.EILCode = 'HS'",
+    "difficulty": "moderate"
+  },
+  {
+    "question_id": 38,
+    "db_id": "california_schools",
+    "question": "What are the webpages for the Los Angeles County school that has between 2,000 and 3,000 test takers?",
+    "evidence": "",
+    "SQL": "SELECT T2.Website FROM satscores AS T1 INNER JOIN schools AS T2 ON T1.cds = T2.CDSCode WHERE T1.NumTstTakr BETWEEN 2000 AND 3000 AND T2.County = 'Los Angeles'",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 1502,
+    "db_id": "debit_card_specializing",
+    "question": "Please list the chains of the gas stations with transactions in euro.",
+    "evidence": "",
+    "SQL": "SELECT DISTINCT T3.ChainID FROM transactions_1k AS T1 INNER JOIN customers AS T2 ON T1.CustomerID = T2.CustomerID INNER JOIN gasstations AS T3 ON T1.GasStationID = T3.GasStationID WHERE T2.Currency = 'EUR'",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 1526,
+    "db_id": "debit_card_specializing",
+    "question": "For the customer who paid 634.8 in 2012/8/25, what was the consumption decrease rate from Year 2012 to 2013?",
+    "evidence": "'2012/8/24' can be represented by '2012-08-24'; Consumption decrease rate = (consumption_2012 - consumption_2013) / consumption_2012",
+    "SQL": "SELECT CAST(SUM(IIF(SUBSTR(Date, 1, 4) = '2012', Consumption, 0)) - SUM(IIF(SUBSTR(Date, 1, 4) = '2013', Consumption, 0)) AS FLOAT) / SUM(IIF(SUBSTR(Date, 1, 4) = '2012', Consumption, 0)) FROM yearmonth WHERE CustomerID = ( SELECT T1.CustomerID FROM transactions_1k AS T1 INNER JOIN gasstations AS T2 ON T1.GasStationID = T2.GasStationID WHERE T1.Date = '2012-08-25' AND T1.Price = 634.8 )",
+    "difficulty": "challenging"
+  },
+  {
+    "question_id": 61,
+    "db_id": "california_schools",
+    "question": "How many chartered schools located in the city of Hickman are owned by the Elementary School District?",
+    "evidence": "Elementary School District refers to DOC = 52; Chartered schools refer to Charter = 1 in the table schools",
+    "SQL": "SELECT COUNT(School) FROM schools WHERE DOC = 52 AND Charter = 1 AND City = 'Hickman'",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 1493,
+    "db_id": "debit_card_specializing",
+    "question": "In February 2012, what percentage of customers consumed more than 528.3?",
+    "evidence": "February 2012 refers to '201202' in yearmonth.date; The first 4 strings of the Date values in the yearmonth table can represent year; The 5th and 6th string of the date can refer to month.",
+    "SQL": "SELECT CAST(SUM(IIF(Consumption > 528.3, 1, 0)) AS FLOAT) * 100 / COUNT(CustomerID) FROM yearmonth WHERE Date = '201202'",
+    "difficulty": "simple"
+  },
+  {
+    "question_id": 64,
+    "db_id": "california_schools",
+    "question": "What is the total number of schools with a mailing city in Hickman belonging to the charter number 00D4?",
+    "evidence": "",
+    "SQL": "SELECT COUNT(*) FROM schools WHERE CharterNum = '00D4' AND MailCity = 'Hickman'",
+    "difficulty": "simple"
+  }
+]

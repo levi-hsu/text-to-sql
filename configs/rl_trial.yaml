@@ -1,0 +1,68 @@
+# Smoke-test copy of configs/rl.yaml -- same everything except a tiny
+# max_steps and a separate output dir, so changes can be checked cheaply (a
+# handful of steps) before committing to the full 300-step run.
+#
+# v2: mirrors configs/rl.yaml's v2 changes -- checkpoint-500 as the starting
+# adapter, num_generations 2->4 (per_device_train_batch_size 2->4 to match),
+# and reward.partial_credit_executes_wrong_result. num_generations=4 roughly
+# doubles rollout-generation VRAM pressure versus the first run's
+# num_generations=2, which is the main thing this trial needs to confirm
+# fits on the 8GB card before the real run -- watch nvidia-smi / free -h
+# while this runs. Output goes to a new _trial_v2 dir so the first trial's
+# runs/rl_qwen2.5coder3b_trial is untouched.
+#
+# After this runs cleanly end to end (including at least one health-check
+# step, since eval_steps=2 here vs. 25 in the real config) and
+# runs/rl_qwen2.5coder3b_trial_v2/health_log.jsonl has at least one line in
+# it with a sane frac_reward_zero_std, move on to configs/rl.yaml.
+
+model:
+  name_or_path: /home/levi/Documents/llm/Qwen2.5-Coder-3B-Instruct
+  dtype: bfloat16
+  sft_adapter: runs/sft_qwen2.5coder3b/checkpoint-500
+
+data:
+  train_jsonl: data/sft/spider_train_subset.jsonl
+  tables: data/spider_data/tables.json   # renamed from spider_tables -- see configs/rl.yaml
+  db_dir: data/spider_data/database      # renamed from spider_db_dir -- see configs/rl.yaml
+  max_prompt_length: 1024
+  max_completion_length: 256
+
+grpo:
+  num_generations: 4
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 2   # small on purpose: fewer steps to reach the first
+                                     # optimizer update while checking this fits at all
+  learning_rate: 1.0e-5
+  beta: 0.04
+  temperature: 1.3
+  num_train_epochs: 1
+  max_steps: 10          # just enough to exercise a few optimizer steps and one health check
+  use_vllm: false
+  logging_steps: 1
+  save_strategy: steps
+  save_steps: 10
+  save_total_limit: 1
+  bf16: true
+  gradient_checkpointing: true
+  optim: paged_adamw_8bit
+  report_to: none
+
+reward:
+  partial_credit_executes_wrong_result: 0.1
+
+output:
+  run_dir: runs/rl_qwen2.5coder3b_trial_v2
+
+monitor:
+  eval_steps: 2   # run the health check almost every step, to actually exercise
+                   # the held-out generation path within only 10 total steps
+  heldout_jsonl: data/sft/rl_heldout.jsonl
+  heldout_size: 10   # small slice for a fast trial, not the full 50
+  max_degenerate_rate: 0.15
+  min_distinct_ratio: 0.20
+  max_hallucination_rate: 0.05
+  log_jsonl: runs/rl_qwen2.5coder3b_trial_v2/health_log.jsonl
+  # early_stop_* not overridden here -- inherits configs/rl.yaml's defaults
+  # (enabled, 3 checks, 0.9 threshold), which land at step 6 given eval_steps=2
+  # here, so this trial also exercises the auto-stop path itself.

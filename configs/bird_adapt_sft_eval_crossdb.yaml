@@ -1,0 +1,29 @@
+# Third eval slice for the SFT-continuation arm: crossdb-eval, the 9 BIRD
+# databases entirely disjoint from the training pool -- the actual
+# schema-transfer test. See configs/bird_adapt_sft_eval.yaml for the other
+# two slices (Spider-dev retention, pool-heldout memorization check); both
+# write into the same output.run_dir, distinguished by --split (see
+# scripts/run_bird_adapt_eval.sh).
+
+model:
+  name_or_path: /home/levi/Documents/llm/Qwen2.5-Coder-3B-Instruct
+  dtype: bfloat16
+  device: cuda
+  load_in_4bit: true
+  adapter: runs/bird_adapt_sft/adapter
+
+generation:
+  max_new_tokens: 256
+  do_sample: false
+  temperature: 1.0
+  num_beams: 1
+  batch_size: 4
+
+data:
+  bird_tables: data/bird-dev/dev_tables.json
+  bird_db_dir: data/bird-dev/dev_databases
+  bird_dev: data/bird_adapt/bird_crossdb_eval_dev.json
+  bird_dev_gold: data/bird_adapt/bird_crossdb_eval_gold.sql
+
+output:
+  run_dir: runs/bird_adapt_sft_eval

@@ -1,0 +1,987 @@
+{
+  "num_samples": 4,
+  "temperature": 1.3,
+  "counts": {
+    "hard": 110,
+    "mixed": 10,
+    "easy": 2
+  },
+  "examples": [
+    {
+      "index": 0,
+      "db_id": "california_schools",
+      "question": "What is the unabbreviated mailing street address of the school with the highest FRPM count for K-12 students?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 1,
+      "db_id": "debit_card_specializing",
+      "question": "How many customers in KAM had a consumption of less than 30,000 for the year 2012?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 2,
+      "db_id": "california_schools",
+      "question": "What is the total number of schools whose total SAT scores are greater or equal to 1500 whose mailing city is Lakeport?",
+      "n_correct": 1,
+      "n_samples": 4,
+      "bucket": "mixed"
+    },
+    {
+      "index": 3,
+      "db_id": "california_schools",
+      "question": "What is the eligible free or reduced price meal rate for the top 5 schools in grades 1-12 with the highest free or reduced price meal count of the schools with the ownership code 66?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 4,
+      "db_id": "california_schools",
+      "question": "Of the schools that offers a magnet program serving a grade span of Kindergarten to 8th grade, how many offers Multiple Provision Types? List the number of cities that offers a Kindergarten to 8th grade span and indicate how many schools are there serving such grade span for each city.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 5,
+      "db_id": "california_schools",
+      "question": "List the top five schools, by descending order, from the highest to the lowest, the most number of Enrollment (Ages 5-17). Please give their NCES school identification number.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 6,
+      "db_id": "debit_card_specializing",
+      "question": "For all the transactions happened during 8:00-9:00 in 2012/8/26, how many happened in CZE?",
+      "n_correct": 3,
+      "n_samples": 4,
+      "bucket": "mixed"
+    },
+    {
+      "index": 7,
+      "db_id": "california_schools",
+      "question": "In chartered schools with charter number 00D2, what are the names of all the administrators? Include the name of the school and the city to which it belongs",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 8,
+      "db_id": "debit_card_specializing",
+      "question": "How many transactions were paid in CZK in the morning of 2012/8/26?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 9,
+      "db_id": "debit_card_specializing",
+      "question": "Among the customers who paid in euro, how many of them have a monthly consumption of over 1000?",
+      "n_correct": 1,
+      "n_samples": 4,
+      "bucket": "mixed"
+    },
+    {
+      "index": 10,
+      "db_id": "debit_card_specializing",
+      "question": "In 2012, who had the least consumption in LAM?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 11,
+      "db_id": "debit_card_specializing",
+      "question": "How many percent of LAM customer consumed more than 46.73?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 12,
+      "db_id": "debit_card_specializing",
+      "question": "What percentage of KAM customers pay in euros?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 13,
+      "db_id": "california_schools",
+      "question": "What is the administrator's last name that oversees the school with Charter number 40? Indicate the district, the county where the school is situated, and the name of the school.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 14,
+      "db_id": "debit_card_specializing",
+      "question": "Which LAM customer used the Euro as their currency and had the highest consumption in October 2013?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 15,
+      "db_id": "debit_card_specializing",
+      "question": "What was the difference in gas consumption between CZK-paying customers and EUR-paying customers in 2012?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 16,
+      "db_id": "california_schools",
+      "question": "How many schools in merged Alameda have number of test takers less than 100?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 17,
+      "db_id": "debit_card_specializing",
+      "question": "What percentage of Slovakian gas stations are premium?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 18,
+      "db_id": "california_schools",
+      "question": "Between 1/1/2000 to 12/31/2005, how many directly funded schools opened in the county of Stanislaus?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 19,
+      "db_id": "california_schools",
+      "question": "How many test takers are there at the school/s whose mailing city address is in Fresno?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 20,
+      "db_id": "california_schools",
+      "question": "Name schools in Riverside which the average of average math score for SAT is grater than 400, what is the funding type of these schools?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 21,
+      "db_id": "california_schools",
+      "question": "What is the lowest grade for the District Special Education Consortia School with National Center for Educational Statistics school district identification number of 0613360?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 22,
+      "db_id": "california_schools",
+      "question": "What is the educational level name for the schools with Breakfast Provision 2 in county code 37? Indicate the name of the school.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 23,
+      "db_id": "california_schools",
+      "question": "What are the websites for all the partially virtual chartered schools located in San Joaquin?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 24,
+      "db_id": "debit_card_specializing",
+      "question": "Which year recorded the most consumption of gas paid in CZK?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 25,
+      "db_id": "debit_card_specializing",
+      "question": "Which of the three segments\u2014SME, LAM and KAM\u2014has the biggest and lowest percentage increases in consumption paid in EUR between 2012 and 2013?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 26,
+      "db_id": "debit_card_specializing",
+      "question": "What kind of currency did the customer paid at 16:25:00 in 2012/8/24?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 27,
+      "db_id": "california_schools",
+      "question": "Under whose administration is the school with the highest number of students scoring 1500 or more on the SAT? Indicate their full names.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 28,
+      "db_id": "california_schools",
+      "question": "What is the Percent (%) Eligible Free (K-12) in the school administered by an administrator whose first name is Alusine. List the district code of the school.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 29,
+      "db_id": "debit_card_specializing",
+      "question": "Please list the countries of the gas stations with transactions taken place in June, 2013.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 30,
+      "db_id": "california_schools",
+      "question": "What is the ratio in percentage of Santa Clara County schools that are locally funded compared to all other types of charter school funding?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 31,
+      "db_id": "california_schools",
+      "question": "Rank schools by their average score in Writing where the score is greater than 499, showing their charter numbers.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 32,
+      "db_id": "california_schools",
+      "question": "In which mailing street address can you find the school that has the lowest average score in reading? Also give the school's name.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 33,
+      "db_id": "debit_card_specializing",
+      "question": "For the deal happened at 2012/8/24 12:42:00, which country was it?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 34,
+      "db_id": "california_schools",
+      "question": "Please list the phone numbers of the direct charter-funded schools that are opened after 2000/1/1.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 35,
+      "db_id": "debit_card_specializing",
+      "question": "How many gas stations in CZE has Premium gas?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 36,
+      "db_id": "debit_card_specializing",
+      "question": "There's one customer spent 214582.17 in the June of 2013, which currency did he/she use?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 37,
+      "db_id": "california_schools",
+      "question": "List the names of virtual schools that are among the top 5 in their respective counties based on average reading scores.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 38,
+      "db_id": "debit_card_specializing",
+      "question": "For all the people who paid more than 29.00 per unit of product id No.5. Give their consumption status in the August of 2012.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 39,
+      "db_id": "california_schools",
+      "question": "What is the most common type of grade span served in the city of Adelanto?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 40,
+      "db_id": "debit_card_specializing",
+      "question": "How many transactions taken place in the gas station in the Czech Republic are with a price of over 1000?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 41,
+      "db_id": "debit_card_specializing",
+      "question": "What was the product id of the transaction happened at 2012/8/23 21:20:00?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 42,
+      "db_id": "california_schools",
+      "question": "What is the grade span offered in the school with the highest longitude?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 43,
+      "db_id": "california_schools",
+      "question": "What is the eligible free rate of the 10th and 11th schools with the highest enrolment for students in grades 1 through 12?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 44,
+      "db_id": "debit_card_specializing",
+      "question": "What segment did the customer have at 2012/8/23 21:20:00?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 45,
+      "db_id": "california_schools",
+      "question": "In Los Angeles how many schools have more than 500 free meals but less than 700 free or reduced price meals for K-12?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 46,
+      "db_id": "california_schools",
+      "question": "Among the schools with the average score in Math over 560 in the SAT test, how many schools are directly charter-funded?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 47,
+      "db_id": "california_schools",
+      "question": "What is the free rate for students between the ages of 5 and 17 at the school run by Kacey Gibson?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 48,
+      "db_id": "debit_card_specializing",
+      "question": "Which gas station has the highest amount of revenue?",
+      "n_correct": 1,
+      "n_samples": 4,
+      "bucket": "mixed"
+    },
+    {
+      "index": 49,
+      "db_id": "debit_card_specializing",
+      "question": "Which SME customer consumed the least in June 2012?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 50,
+      "db_id": "california_schools",
+      "question": "What is the monthly average number of schools that opened in Alameda County under the jurisdiction of the Elementary School District in 1980?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 51,
+      "db_id": "california_schools",
+      "question": "How many schools in Amador which the Low Grade is 9 and the High Grade is 12?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 52,
+      "db_id": "debit_card_specializing",
+      "question": "What was the gas consumption peak month for SME customers in 2013?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 53,
+      "db_id": "california_schools",
+      "question": "In which city can you find the school in the state of California with the lowest latitude coordinates and what is its lowest grade? Indicate the school name.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 54,
+      "db_id": "debit_card_specializing",
+      "question": "Which client segment consumed the least in September 2013?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 55,
+      "db_id": "debit_card_specializing",
+      "question": "Please list the disparate time of the transactions taken place in the gas stations from chain no. 11.",
+      "n_correct": 3,
+      "n_samples": 4,
+      "bucket": "mixed"
+    },
+    {
+      "index": 56,
+      "db_id": "debit_card_specializing",
+      "question": "Is it true that more SMEs pay in Czech koruna than in euros? If so, how many more?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 57,
+      "db_id": "debit_card_specializing",
+      "question": "What is the highest monthly consumption in the year 2012?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 58,
+      "db_id": "debit_card_specializing",
+      "question": "What was the average monthly consumption of customers in SME for the year 2013?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 59,
+      "db_id": "debit_card_specializing",
+      "question": "How much more was customer 7 consuming in April 2013 than customer 5?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 60,
+      "db_id": "debit_card_specializing",
+      "question": "How much did customer 6 consume in total between August and November 2013?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 61,
+      "db_id": "california_schools",
+      "question": "When did the first-through-twelfth-grade school with the largest enrollment open?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 62,
+      "db_id": "california_schools",
+      "question": "What are the two most common first names among the school administrators? Indicate the district to which they administer.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 63,
+      "db_id": "debit_card_specializing",
+      "question": "Which country has more \"value for money\" gas stations? Please give a total number of \"value for money\" gas stations in each country.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 64,
+      "db_id": "debit_card_specializing",
+      "question": "Which country was the card owner of No.667467 in?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 65,
+      "db_id": "debit_card_specializing",
+      "question": "What is the ratio of customers who pay in EUR against customers who pay in CZK?",
+      "n_correct": 1,
+      "n_samples": 4,
+      "bucket": "mixed"
+    },
+    {
+      "index": 66,
+      "db_id": "california_schools",
+      "question": "Give the names of the schools with the percent eligible for free meals in K-12 is more than 0.1 and test takers whose test score is greater than or equal to 1500?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 67,
+      "db_id": "california_schools",
+      "question": "What is the free or reduced price meal count for ages 5 to 17 in the Youth Authority School with a mailing street address of PO Box 1040?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 68,
+      "db_id": "california_schools",
+      "question": "Which state special schools have the highest number of enrollees from grades 1 through 12?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 69,
+      "db_id": "california_schools",
+      "question": "Between San Diego and Santa Barbara, which county offers the most number of schools that does not offer physical building? Indicate the amount.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 70,
+      "db_id": "california_schools",
+      "question": "What is the school type of the school with the highest latitude? Indicate the name of the school as well as the latitude coordinates.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 71,
+      "db_id": "california_schools",
+      "question": "What is the complete address of the school with the lowest excellence rate? Indicate the Street, City, Zip and State.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 72,
+      "db_id": "debit_card_specializing",
+      "question": "Who is the top spending customer and how much is the average price per single item purchased by this customer? What currency was being used?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 73,
+      "db_id": "california_schools",
+      "question": "For the school with the highest average score in Reading in the SAT test, what is its FRPM count for students aged 5-17?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 74,
+      "db_id": "debit_card_specializing",
+      "question": "What is the biggest monthly consumption of the customers who use euro as their currency?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 75,
+      "db_id": "california_schools",
+      "question": "Which active district has the highest average score in Reading?",
+      "n_correct": 2,
+      "n_samples": 4,
+      "bucket": "mixed"
+    },
+    {
+      "index": 76,
+      "db_id": "california_schools",
+      "question": "Which county reported the most number of school closure in the 1980s with school wonership code belonging to Youth Authority Facilities (CEA)?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 77,
+      "db_id": "california_schools",
+      "question": "What is the phone number and extension number for the school with the zip code 95203-3704? Indicate the school's name.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 78,
+      "db_id": "debit_card_specializing",
+      "question": "Which customers, paying in CZK, consumed the most gas in 2011?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 79,
+      "db_id": "california_schools",
+      "question": "How many schools with an average score in Math greater than 400 in the SAT test are exclusively virtual?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 80,
+      "db_id": "debit_card_specializing",
+      "question": "How many more \"discount\" gas stations does the Czech Republic have compared to Slovakia?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 81,
+      "db_id": "california_schools",
+      "question": "If there are any, what are the websites address of the schools with a free meal count of 1,900-2,000 to students aged 5-17? Include the name of the school.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 82,
+      "db_id": "california_schools",
+      "question": "Which schools served a grade span of Kindergarten to 9th grade in the county of Los Angeles and what is its Percent (%) Eligible FRPM (Ages 5-17)?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 83,
+      "db_id": "california_schools",
+      "question": "What is the average writing score of the school who has the highest number of test takers whose total SAT sscores are greater or equal to 1500? Indicate the city to where the school is situated.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 84,
+      "db_id": "debit_card_specializing",
+      "question": "Among the transactions made in the gas stations in the Czech Republic, how many of them are taken place after 2012/1/1?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 85,
+      "db_id": "california_schools",
+      "question": "What is the average writing score of each of the schools managed by Ricci Ulrich? List the schools and the corresponding average writing scores.",
+      "n_correct": 2,
+      "n_samples": 4,
+      "bucket": "mixed"
+    },
+    {
+      "index": 86,
+      "db_id": "california_schools",
+      "question": "Among the schools with an SAT excellence rate of over 0.3, what is the highest eligible free rate for students aged 5-17?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 87,
+      "db_id": "california_schools",
+      "question": "What is the ratio of merged Unified School District schools in Orange County to merged Elementary School District schools?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 88,
+      "db_id": "california_schools",
+      "question": "Please list the codes of the schools with a total enrollment of over 500.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 89,
+      "db_id": "california_schools",
+      "question": "Please list the phone numbers of the schools with the top 3 SAT excellence rate.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 90,
+      "db_id": "california_schools",
+      "question": "What is the average math score of the school with the lowest average score for all subjects, and in which county is it located?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 91,
+      "db_id": "debit_card_specializing",
+      "question": "Which segment had the least consumption?",
+      "n_correct": 4,
+      "n_samples": 4,
+      "bucket": "easy"
+    },
+    {
+      "index": 92,
+      "db_id": "debit_card_specializing",
+      "question": "Please list the product description of the products bought in transactions in euro.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 93,
+      "db_id": "california_schools",
+      "question": "What is the average score in writing for the schools that were opened after 1991 or closed before 2000? List the school names along with the score. Also, list the communication number of the schools if there is any.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 94,
+      "db_id": "california_schools",
+      "question": "What is the phone number of the school that has the highest average score in Math?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 95,
+      "db_id": "debit_card_specializing",
+      "question": "What is the percentage of \"premium\" against the overall segment in Country = \"SVK\"?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 96,
+      "db_id": "california_schools",
+      "question": "What are the valid e-mail addresses of the administrator of the school located in the San Bernardino county, City of San Bernardino City Unified that opened between 1/1/2009 to 12/31/2010 whose school types are public Intermediate/Middle Schools and Unified Schools?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 97,
+      "db_id": "debit_card_specializing",
+      "question": "What's the nationality of the customer who spent 548.4 in 2012/8/24?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 98,
+      "db_id": "california_schools",
+      "question": "What is the telephone number for the school with the lowest average score in reading in Fresno Unified?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 99,
+      "db_id": "california_schools",
+      "question": "Please list the lowest three eligible free rates for students aged 5-17 in continuation schools.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 100,
+      "db_id": "california_schools",
+      "question": "What is the district code for the School that does not offer a magnet program in the city of Fresno?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 101,
+      "db_id": "debit_card_specializing",
+      "question": "Which client ID consumed the most in September 2013?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 102,
+      "db_id": "california_schools",
+      "question": "Of all the schools with a mailing state address in California, how many are active in San Joaquin city?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 103,
+      "db_id": "debit_card_specializing",
+      "question": "Who among KAM's customers consumed the most? How much did it consume?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 104,
+      "db_id": "california_schools",
+      "question": "What is the postal street address for the school with the 7th highest Math average? Indicate the school's name.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 105,
+      "db_id": "debit_card_specializing",
+      "question": "Which country had the gas station that sold the most expensive product id No.2 for one unit?",
+      "n_correct": 4,
+      "n_samples": 4,
+      "bucket": "easy"
+    },
+    {
+      "index": 106,
+      "db_id": "debit_card_specializing",
+      "question": "What is the average total price of the transactions taken place in gas stations in the Czech Republic?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 107,
+      "db_id": "california_schools",
+      "question": "What is the website for the schools under the administrations of Mike Larson and Dante Alvarez?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 108,
+      "db_id": "california_schools",
+      "question": "Of the schools with a mailing state address in California, what is the ratio of the schools located in the county of Colusa against the school located in the county of Humboldt?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 109,
+      "db_id": "california_schools",
+      "question": "List the names of schools with more than 30 difference in enrollements between K-12 and ages 5-17? Please also give the full street adress of the schools.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 110,
+      "db_id": "california_schools",
+      "question": "What is the phone number of the school that has the highest number of test takers with an SAT score of over 1500?",
+      "n_correct": 1,
+      "n_samples": 4,
+      "bucket": "mixed"
+    },
+    {
+      "index": 111,
+      "db_id": "california_schools",
+      "question": "What is the number of SAT test takers of the schools with the highest FRPM count for K-12 students?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 112,
+      "db_id": "debit_card_specializing",
+      "question": "How much did the KAM customers consume in total in May 2013?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 113,
+      "db_id": "california_schools",
+      "question": "Which school in Contra Costa has the highest number of test takers?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 114,
+      "db_id": "debit_card_specializing",
+      "question": "For the customer who paid 124.05 in 2012/8/24, how much did he/she spend during the January of 2012? And what is the date and expenses exactly?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 115,
+      "db_id": "california_schools",
+      "question": "State the names and full communication address of high schools in Monterey which has more than 800 free or reduced price meals for ages 15-17?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 116,
+      "db_id": "california_schools",
+      "question": "What is the administrator's email address of the chartered school with the fewest students enrolled in grades 1 through 12?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 117,
+      "db_id": "california_schools",
+      "question": "What is the phone number and extension number for the school that had the 333rd highest average writing score?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 118,
+      "db_id": "california_schools",
+      "question": "What is the total number of non-chartered schools in the county of Los Angeles with a percent (%) of eligible free meals for grades 1 through 12 that is less than 0.18%?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 119,
+      "db_id": "california_schools",
+      "question": "How many active and closed District Community Day Schools are there in the county of Alpine?",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    },
+    {
+      "index": 120,
+      "db_id": "california_schools",
+      "question": "Among the schools with the SAT test takers of over 500, please list the schools that are magnet schools or offer a magnet program.",
+      "n_correct": 1,
+      "n_samples": 4,
+      "bucket": "mixed"
+    },
+    {
+      "index": 121,
+      "db_id": "california_schools",
+      "question": "Consider the average difference between K-12 enrollment and 15-17 enrollment of schools that are locally funded, list the names and DOC type of schools which has a difference above this average.",
+      "n_correct": 0,
+      "n_samples": 4,
+      "bucket": "hard"
+    }
+  ]
+}

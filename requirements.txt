@@ -11,3 +11,10 @@ bitsandbytes>=0.43
 datasets>=2.19
 accelerate>=0.30
 pyyaml>=6.0
+
+# Only needed for scripts/eval_exact_match.py (optional supplementary
+# exact-set-match metric via Spider's own vendored evaluation.py). Not
+# needed for eval_sql.py's execution-accuracy metric, which is the primary
+# one used throughout PLAN.md. After installing, also fetch its tokenizer
+# data once: python3 -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
+nltk>=3.8

@@ -1,0 +1,63 @@
+# Config for the SFT arm (see plan.md, "Arms" -> "SFT arm").
+# QLoRA: base weights frozen in 4-bit NF4, LoRA adapters trained in bf16.
+# Used by scripts/build_sft_data.py and scripts/train_sft.py.
+# After training, evaluate with configs/sft_eval.yaml + generate_sql.py's
+# --adapter loading, not this file (this one has no `data.spider_dev` etc.,
+# only what's needed to build the training set and train).
+
+model:
+  name_or_path: /home/levi/Documents/llm/Qwen2.5-Coder-3B-Instruct
+  dtype: bfloat16
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  # Standard "all linear projections" LoRA target set for Qwen2.5 (and most
+  # Llama-family) architectures: attention projections + MLP projections.
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+data:
+  spider_tables: data/spider_data/tables.json
+  train_spider: data/spider_data/train_spider.json
+  train_others: data/spider_data/train_others.json
+  use_train_others: true    # combine both Spider-train files; set false to use train_spider.json only
+
+  # Drop any (schema + question + gold SQL) example that doesn't fit.
+  # Lowered from 2048 to 1024 after hitting a CUDA OOM on the 8GB card:
+  # even with QLoRA + gradient checkpointing + sdpa attention, activation
+  # memory at seq_len ~2048 with batch_size=1 left no headroom. Re-run
+  # build_sft_data.py after changing this value -- it re-filters against
+  # the new limit and rewrites sft_data_out.
+  max_seq_length: 1024
+  seed: 42
+
+  # Provisional subset size (plan.md "Open items": "finalize after a first
+  # timing pass"). Set to null to train on every example that passes
+  # filtering in build_sft_data.py. Lower this first if a timing pass shows
+  # the run will not finish in a few GPU-hours.
+  subset_size: 2000
+
+  sft_data_out: data/sft/spider_train_subset.jsonl
+
+training:
+  output_dir: runs/sft_qwen2.5coder3b
+  num_train_epochs: 3
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8   # effective batch size 8, within 8GB VRAM at max_seq_length 1024
+  learning_rate: 2.0e-4
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.03
+  logging_steps: 10
+  # Checkpoint every 100 optimizer steps rather than once per epoch (250
+  # steps): the run is close to the VRAM ceiling (see max_seq_length note
+  # above), so if it OOM-crashes mid-epoch, this bounds how much training
+  # is lost. save_total_limit keeps only the 2 most recent to bound disk use.
+  save_strategy: steps
+  save_steps: 100
+  save_total_limit: 2
+  bf16: true
+  gradient_checkpointing: true
+  optim: paged_adamw_8bit    # paged optimizer keeps optimizer-state spikes off VRAM, no swap configured
+  dataloader_num_workers: 2  # kept low per plan.md's no-swap mitigation
+  report_to: none

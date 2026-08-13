@@ -1,0 +1,35 @@
+# Eval config for the SFT arm (see plan.md, "Arms" -> "SFT arm").
+# Same base model + same generation settings as configs/baseline.yaml, so
+# the baseline-vs-SFT comparison only varies the adapter. load_in_4bit is
+# true here (unlike baseline.yaml) because train_sft.py trains the LoRA
+# adapter against a 4-bit NF4 base -- evaluating against a differently
+# quantized base would not exercise the same weights the adapter was
+# trained on.
+
+model:
+  name_or_path: /home/levi/Documents/llm/Qwen2.5-Coder-3B-Instruct
+  dtype: bfloat16
+  device: cuda
+  load_in_4bit: true
+  adapter: runs/sft_qwen2.5coder3b/adapter
+
+generation:
+  max_new_tokens: 256
+  do_sample: false          # greedy decoding, matches baseline.yaml for a fair comparison
+  temperature: 1.0
+  num_beams: 1
+  batch_size: 4
+
+data:
+  spider_tables: data/spider_data/tables.json
+  spider_db_dir: data/spider_data/database
+  spider_dev: data/spider_data/dev.json
+  spider_dev_gold: data/spider_data/dev_gold.sql
+
+  bird_tables: data/bird-dev/dev_tables.json
+  bird_db_dir: data/bird-dev/dev_databases
+  bird_dev: data/bird-dev/dev.json
+  bird_dev_gold: data/bird-dev/dev.sql
+
+output:
+  run_dir: runs/sft_qwen2.5coder3b_eval

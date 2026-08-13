@@ -1,0 +1,32 @@
+# Eval config for RL-continue-v2 Dr. GRPO variant (configs/bird_adapt_rl_v2_phase1_drgrpo.yaml
+# + phase2_drgrpo.yaml, checkpoint selected by scripts/select_best_bird_adapt_rl_checkpoint.py
+# --run-dir runs/bird_adapt_rl_v2_drgrpo). Mirrors configs/bird_adapt_rl_v2_eval.yaml
+# exactly except the adapter and run_dir.
+
+model:
+  name_or_path: /home/levi/Documents/llm/Qwen2.5-Coder-3B-Instruct
+  dtype: bfloat16
+  device: cuda
+  load_in_4bit: true
+  adapter: runs/bird_adapt_rl_v2_drgrpo/adapter
+
+generation:
+  max_new_tokens: 256
+  do_sample: false
+  temperature: 1.0
+  num_beams: 1
+  batch_size: 4
+
+data:
+  spider_tables: data/spider_data/tables.json
+  spider_db_dir: data/spider_data/database
+  spider_dev: data/spider_data/dev.json
+  spider_dev_gold: data/spider_data/dev_gold.sql
+
+  bird_tables: data/bird-dev/dev_tables.json
+  bird_db_dir: data/bird-dev/dev_databases
+  bird_dev: data/bird_adapt/bird_pool_heldout_dev.json
+  bird_dev_gold: data/bird_adapt/bird_pool_heldout_gold.sql
+
+output:
+  run_dir: runs/bird_adapt_rl_v2_drgrpo_eval
