@@ -1,4 +1,4 @@
-# Config for the RL arm (see plan.md, "Arms" -> "RL arm", and "Pre-RL SFT
+# Config for the RL arm (see plan.md, "models" -> "RL arm", and "Pre-RL SFT
 # sanity check"). GRPO via TRL's GRPOTrainer, continuing training from the
 # SFT arm's LoRA adapter -- not a fresh adapter -- against the same base
 # model and QLoRA setup as configs/sft.yaml, so the SFT-vs-RL comparison

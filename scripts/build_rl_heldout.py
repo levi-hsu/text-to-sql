@@ -6,7 +6,7 @@ until this script existed). Drawn from Spider-dev, in the same
 No train/monitor leakage: the RL arm trains on data/sft/spider_train_subset.jsonl
 (Spider-train), entirely disjoint from Spider-dev by construction of the
 Spider split -- this is the same dev set generate_sql.py/eval_sql.py already
-use for the SFT and baseline arms' offline evaluation, just re-purposed here
+use for the SFT and baseline models' offline evaluation, just re-purposed here
 for a cheap in-training health check, not a new held-out source.
 
 Usage:

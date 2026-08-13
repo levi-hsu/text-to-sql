@@ -6,7 +6,7 @@
 
 ## Abstract
 
-We compare supervised fine-tuning (SFT) and reinforcement learning (RL) as post-training methods for text-to-SQL generation under a controlled experimental design on a single consumer GPU with 8GB VRAM. Starting from Qwen2.5-Coder-3B-Instruct, we train one QLoRA SFT arm and two GRPO RL arms on the same Spider train (filtered) subset. The second RL arm continues from an earlier SFT checkpoint, uses more rollouts, and adds a small partial-credit reward term. We evaluate these three arms together with a zero-shot baseline on Spider eval (in-distribution) and BIRD eval (out-of-distribution). SFT and RL obtain the same Spider eval execution accuracy, 0.6973, while RL-v2 improves it further to 0.7128; all three outperform the zero-shot baseline at 0.6083. However, every post-trained arm generalizes *worse* than the untouched baseline: the Spider-to-BIRD accuracy drop is 0.4010 for baseline, compared with 0.5095 for SFT, 0.5017 for RL, and 0.5276 for RL-v2. Therefore, post-training clearly improves in-distribution performance, but makes the model worse than doing nothing at retaining this performance out-of-distribution. The main original contribution of this project is a per-category error-taxonomy analysis, since the papers this project scales down from report only aggregate accuracy. The analysis shows that post-training reduces structural errors, including schema-column and join mismatches, but increases value-level errors, such as wrong constants and wrong-but-valid columns, enough to roughly cancel the improvement on BIRD. A second experiment continues training on a small 122-example slice of real BIRD data. SFT-continue improves BIRD continue cross-database EX, while RL-continue on the same data collapses on a same-schema memorization check; the training health logs show why this happens. We release the full training, evaluation, and error-taxonomy pipeline.
+We compare supervised fine-tuning (SFT) and reinforcement learning (RL) as post-training methods for text-to-SQL generation under a controlled experimental design on a single consumer GPU with 8GB VRAM. Starting from Qwen2.5-Coder-3B-Instruct, we train one QLoRA SFT model and two GRPO RL models on the same Spider train (filtered) subset. The second RL model continues from an earlier SFT checkpoint, uses more rollouts, and adds a small partial-credit reward term. We evaluate these three models together with a zero-shot baseline on Spider eval (in-distribution) and BIRD eval (out-of-distribution). SFT and RL obtain the same Spider eval execution accuracy, 0.6973, while RL-v2 improves it further to 0.7128; all three outperform the zero-shot baseline at 0.6083. However, every post-trained model generalizes *worse* than the untouched baseline: the Spider-to-BIRD accuracy drop is 0.4010 for baseline, compared with 0.5095 for SFT, 0.5017 for RL, and 0.5276 for RL-v2. Therefore, post-training clearly improves in-distribution performance, but makes the model worse than doing nothing at retaining this performance out-of-distribution. The main original contribution of this project is a per-category error-taxonomy analysis, since the papers this project scales down from report only aggregate accuracy. The analysis shows that post-training reduces structural errors, including schema-column and join mismatches, but increases value-level errors, such as wrong constants and wrong-but-valid columns, enough to roughly cancel the improvement on BIRD. A second experiment continues training on a small 122-example slice of real BIRD data. SFT-continue improves BIRD continue cross-database EX, while RL-continue on the same data collapses on a same-schema memorization check; the training health logs show why this happens. We release the full training, evaluation, and error-taxonomy pipeline.
 
 ## Introduction
 
@@ -14,7 +14,7 @@ Execution accuracy alone cannot tell us *how* a text-to-SQL model is wrong. Two 
 
 This project studies a narrower and more answerable version of the question considered in recent large-scale work. SQL-R1, Reasoning-SQL, and Arctic-Text2SQL-R1 all report that RL post-training outperforms SFT-only baselines by several execution-accuracy points at the 7B-32B parameter scale, with compute budgets far beyond a single consumer GPU. Here, we ask whether the same *direction* of effect still appears at 3B scale on hardware that is easy to replicate. We also study a question those papers do not report: which specific failure modes are actually corrected by each post-training method.
 
-There are two main findings. First, the benefit of post-training is entirely in-distribution: every post-trained arm generalizes worse from Spider to BIRD than the untouched zero-shot model. At this scale, this is opposite to what a general claim that "RL improves generalization" would suggest. Second, the error taxonomy explains this behavior directly by showing which error categories decrease and which increase after post-training.
+There are two main findings. First, the benefit of post-training is entirely in-distribution: every post-trained model generalizes worse from Spider to BIRD than the untouched zero-shot model. At this scale, this is opposite to what a general claim that "RL improves generalization" would suggest. Second, the error taxonomy explains this behavior directly by showing which error categories decrease and which increase after post-training.
 
 ## Related work
 
@@ -26,7 +26,7 @@ None of the papers above reports a per-category error breakdown. They report agg
 
 ### Model and quantization
 
-All arms use exactly the same base model, Qwen2.5-Coder-3B-Instruct. Therefore, the architecture, parameter count, and tokenizer are fixed, and only the post-training procedure changes. Training uses QLoRA: the base weights are quantized to 4-bit NF4 at loading time and then frozen, while LoRA adapters are trained on top in bf16. Since the term "QLoRA" alone does not show the actual configuration choices, the implementation used in this project is given below:
+All models use exactly the same base model, Qwen2.5-Coder-3B-Instruct. Therefore, the architecture, parameter count, and tokenizer are fixed, and only the post-training procedure changes. Training uses QLoRA: the base weights are quantized to 4-bit NF4 at loading time and then frozen, while LoRA adapters are trained on top in bf16. Since the term "QLoRA" alone does not show the actual configuration choices, the implementation used in this project is given below:
 
 ```python
 from transformers import AutoModelForCausalLM, BitsAndBytesConfig
@@ -56,15 +56,15 @@ peft_config = LoraConfig(
 model = get_peft_model(model, peft_config)
 ```
 
-Only the adapter is updated or saved, while the base model on disk remains unchanged. This allows the RL arm to reload the same frozen base model later and initialize from the SFT adapter. Qwen2.5-Coder-7B-Instruct-GPTQ-Int8 is evaluated only as a zero-shot reference and is never trained. It is excluded from the controlled comparison because it differs from the 3B model in three confounded dimensions at the same time: parameter count, quantization scheme, and training status. Therefore, any performance difference against this model cannot be attributed to a single factor.
+Only the adapter is updated or saved, while the base model on disk remains unchanged. This allows the RL model to reload the same frozen base model later and initialize from the SFT adapter. Qwen2.5-Coder-7B-Instruct-GPTQ-Int8 is evaluated only as a zero-shot reference and is never trained. It is excluded from the controlled comparison because it differs from the 3B model in three confounded dimensions at the same time: parameter count, quantization scheme, and training status. Therefore, any performance difference against this model cannot be attributed to a single factor.
 
 ### Datasets
 
-Spider train (full) and Spider eval are the main training and in-distribution evaluation sets. Spider train (filtered), the 2000-example subset actually used for training, is a filtered subset of the 8659-example Spider train (full) release rather than the entire training split. BIRD eval is used as the out-of-distribution set. It is not used for training in any of the four core arms, so the accuracy gap between Spider eval and BIRD eval is used as the generalization measure. BIRD train, the official training split, is excluded entirely because its per-database files are large enough to be impractical on this hardware, with multi-GB data across roughly 70 real-world databases. Thus, no BIRD-derived data enters the training of the four core arms, and BIRD eval remains a clean OOD set. Experiment 2 later trains on a small slice taken from BIRD eval itself, rather than BIRD train; this is a separate and deliberate choice discussed in that section. Spider-DK is also excluded from the core comparison, so the generalization result is based on only one OOD set. This limitation is stated explicitly below.
+Spider train (full) and Spider eval are the main training and in-distribution evaluation sets. Spider train (filtered), the 2000-example subset actually used for training, is a filtered subset of the 8659-example Spider train (full) release rather than the entire training split. BIRD eval is used as the out-of-distribution set. It is not used for training in any of the four core models, so the accuracy gap between Spider eval and BIRD eval is used as the generalization measure. BIRD train, the official training split, is excluded entirely because its per-database files are large enough to be impractical on this hardware, with multi-GB data across roughly 70 real-world databases. Thus, no BIRD-derived data enters the training of the four core models, and BIRD eval remains a clean OOD set. Experiment 2 later trains on a small slice taken from BIRD eval itself, rather than BIRD train; this is a separate and deliberate choice discussed in that section. Spider-DK is also excluded from the core comparison, so the generalization result is based on only one OOD set. This limitation is stated explicitly below.
 
-### Experimental arms
+### Experimental models
 
-We consider four arms, and evaluate each of them on both Spider eval and BIRD eval:
+We consider four models, and evaluate each of them on both Spider eval and BIRD eval:
 
 - **Baseline** — Qwen2.5-Coder-3B-Instruct, zero-shot, no fine-tuning.
 - **SFT** — the same model, LoRA fine-tuned on Spider train (filtered) with standard (question, schema, gold SQL) supervised pairs.
@@ -97,7 +97,7 @@ Each database is opened in read-only mode. Therefore, a malformed or adversarial
 
 ### RL implementation
 
-The RL arm uses GRPO through TRL's `GRPOTrainer`, continuing from the SFT arm's LoRA adapter rather than starting from a new adapter. GRPO does not require a separate value model or reward model. Instead, the advantage is computed from the mean and standard deviation of multiple sampled completions for each prompt. This is suitable for an execution-verifiable reward and is substantially lighter on an 8GB GPU than PPO's three-model setup. The reward function directly reuses the same `execute_query` and `rows_match` functions shown above, rather than implementing them again. Therefore, the training reward and offline evaluation accuracy use exactly the same computation:
+The RL model uses GRPO through TRL's `GRPOTrainer`, continuing from the SFT model's LoRA adapter rather than starting from a new adapter. GRPO does not require a separate value model or reward model. Instead, the advantage is computed from the mean and standard deviation of multiple sampled completions for each prompt. This is suitable for an execution-verifiable reward and is substantially lighter on an 8GB GPU than PPO's three-model setup. The reward function directly reuses the same `execute_query` and `rows_match` functions shown above, rather than implementing them again. Therefore, the training reward and offline evaluation accuracy use exactly the same computation:
 
 ```python
 def reward_fn(prompts, completions, db_id, gold_sql, **kwargs):
@@ -121,30 +121,34 @@ def reward_fn(prompts, completions, db_id, gold_sql, **kwargs):
 
 One issue appeared immediately in the first RL trial. With TRL's default `temperature=1.0`, `frac_reward_zero_std`—the fraction of sampled GRPO groups in which every completion receives the same score and therefore contributes zero gradient—was 1.0 at every logged step of the full 10-step trial. The training examples were exactly the rows on which the SFT checkpoint had already converged, so resampling at temperature 1.0 continued to produce the same completion every time. Increasing the temperature to 1.3 reduced this value in a follow-up trial, although it did not reduce it to zero. This motivates the ongoing RL health monitoring described below instead of relying only on a single trial run.
 
-### Pre-RL sanity check and ongoing RL health monitoring
+### RL Initialization and Training Diagnostics
 
-Since RL is initialized from the SFT checkpoint, it can only refine behavior that already exists in that checkpoint. If the checkpoint has collapsed to a few fixed templates, hallucinates schema elements, or produces degenerate outputs, RL may *amplify* these behaviors instead of correcting them. Therefore, a pre-RL check is run once before RL starts. It checks four properties that execution accuracy alone does not reveal: execution accuracy and execution-error rate, degenerate-output rate, output diversity across different questions, and schema-hallucination rate. The schema-hallucination rate measures table or column names in the predicted SQL that do not exist in the corresponding database. The check is calibrated by running it on Spider eval gold SQL, which is correct by construction, to measure its own false-positive floor; this value is 0.0000.
+Because RL starts from the SFT checkpoint, the quality of this initialization is important. RL does not necessarily correct undesirable behaviors already present in the checkpoint and may instead reinforce them through reward optimization. Before RL training, we therefore run a sanity check that measures execution accuracy and execution-error rate, degenerate-output rate, output diversity across questions, and schema-hallucination rate. These diagnostics are intended to capture failure modes that execution accuracy alone cannot identify.
 
-The schema-hallucination check uses a heuristic rather than a full SQL parser. It scans each predicted SQL string for quoted identifiers. For a dotted reference such as `"alias"."column"`, it first resolves `alias` to the real table it represents, either because `alias` is itself a table name or through an `AS` binding elsewhere in the query. It then checks `column` against the column set of that specific table rather than the pooled columns of the whole database. This makes it possible to detect a column that exists in the schema but is referenced from the wrong table, in addition to completely invented names. A standalone quoted token that is not part of a dotted pair is checked against the whole-schema pool, unless it appears in a value position, such as immediately after `=`, `LIKE`, or `IN`, or inside an `IN (...)` list. Such tokens are treated as string literals and skipped because calibration on gold SQL showed that this was the main source of false positives, for example `WHERE "Airline" = "JetBlue Airways"`. A prediction is counted toward the hallucination rate if any identifier fails the check, and the rate is the number of such predictions divided by the total number of predictions in that pass. This remains a documented heuristic: unquoted, backtick, and bracket identifiers are not detected, and an alias that cannot be resolved, such as a CTE or subquery alias, falls back to the more lenient whole-schema check rather than being flagged automatically. The same function is also used by `rl_health_callback.py` during the ongoing RL monitoring below.
+The schema-hallucination rate measures whether a prediction references tables or columns that do not exist in the corresponding database. We implement this check as a lightweight heuristic over quoted SQL identifiers rather than using a full SQL parser. For a dotted reference such as `"alias"."column"`, the method first resolves `alias` to its underlying table, either directly or through an `AS` binding, and then checks `column` against the columns of that table. This is stricter than checking against the union of all columns in the database and can therefore detect cases where a valid column is associated with the wrong table.
 
-There is a concrete reason to monitor degenerate outputs separately from the reward curve. In the training data, the question "count the states which have elevations lower than what alabama has" from the `geo` database has gold answer `0`. The placeholder query `SELECT 1=0` returns the same single row as the correct query, so it receives full reward by coincidence. If the policy begins to use this placeholder under uncertainty, the reward curve alone may suggest improvement even though the output has become degenerate. A direct check of the generated content is needed to detect this behavior. For the same reason, an ongoing callback repeats these checks every few hundred optimizer steps during training, since reward hacking or template collapse may be introduced by RL even when they are absent from the starting checkpoint.
+Standalone quoted identifiers are checked against the full schema unless they occur in a value position, such as after `=`, `LIKE`, or `IN`, or inside an `IN (...)` clause. These cases are treated as string literals and ignored. This distinction is necessary because calibration on Spider eval gold SQL showed that quoted literal values, such as `WHERE "Airline" = "JetBlue Airways"`, were the main source of false positives. We calibrate the complete heuristic on Spider eval gold SQL, where the measured false-positive rate is 0.0000. A prediction contributes to the hallucination rate if at least one of its identifiers fails the check. The method remains approximate: it does not detect unquoted, backtick, or bracket identifiers, and unresolved aliases such as those introduced by CTEs or subqueries fall back to the more permissive whole-schema check. The same implementation is used during training by `rl_health_callback.py`.
 
-## Applying and evaluating the three arms
+Degenerate outputs require a separate diagnostic because execution-based rewards can occasionally assign full reward to an incorrect or uninformative query. For example, in the `geo` training data, the question "count the states which have elevations lower than what alabama has" has gold answer `0`. The placeholder query `SELECT 1=0` happens to return the same single row as the correct query and therefore receives full execution reward. A policy that increasingly produces such placeholders could appear to improve according to the reward curve while its actual behavior becomes less meaningful.
+
+For this reason, the same diagnostics are repeated periodically during RL training rather than applied only to the initial SFT checkpoint. The callback runs every few hundred optimizer steps and tracks degenerate outputs, schema hallucinations, and the other sanity-check statistics throughout training. This makes it possible to detect reward hacking or template collapse introduced by RL even when these behaviors are absent at initialization.
+
+## Applying and evaluating the three models
 
 ### Quantitative results
 
 The full scorecard is available at `runs/blog_artifacts/experiment1_scorecard.txt`. The execution-accuracy rows are:
 
-| arm | Spider eval EX | BIRD eval EX | Spider &rarr; BIRD drop |
+| model | Spider eval EX | BIRD eval EX | Spider &rarr; BIRD drop |
 |---|---|---|---|
 | baseline | 0.6083 | 0.2073 | 0.4010 |
 | SFT | 0.6973 | 0.1877 | 0.5095 |
 | RL | 0.6973 | 0.1956 | 0.5017 |
 | RL-v2 | 0.7128 | 0.1851 | 0.5276 |
 
-![Execution accuracy by arm, Spider eval vs BIRD eval](figures/fig1_execution_accuracy_by_arm.png)
+![Execution accuracy by model, Spider eval vs BIRD eval](figures/fig1_execution_accuracy_by_model.png)
 
-SFT and RL obtain exactly the same Spider eval accuracy, while RL-v2 improves it further. All three post-trained arms clearly outperform baseline in-distribution. However, the Spider-to-BIRD drop tells a different story: the baseline drop of 0.4010 is the smallest among all four arms. Therefore, none of the post-trained models improves over the untouched zero-shot model in terms of generalization. Post-training increases Spider eval accuracy but also produces a larger relative drop on BIRD, and RL-v2, which is the strongest in-distribution arm, has the largest drop of all.
+SFT and RL obtain exactly the same Spider eval accuracy, while RL-v2 improves it further. All three post-trained models clearly outperform baseline in-distribution. However, the Spider-to-BIRD drop tells a different story: the baseline drop of 0.4010 is the smallest among all four models. Therefore, none of the post-trained models improves over the untouched zero-shot model in terms of generalization. Post-training increases Spider eval accuracy but also produces a larger relative drop on BIRD, and RL-v2, which is the strongest in-distribution model, has the largest drop of all.
 
 The full error-taxonomy tables are available at `runs/blog_artifacts/experiment1_error_taxonomy.txt`. The categorization is not based on a SQL parser. Instead, it is a heuristic applied after execution has already determined that a prediction is wrong, using simple regex-based checks on the structural features of the SQL. The main logic is shown below:
 
@@ -170,7 +174,7 @@ def categorize_wrong_result(pred_sql, gold_sql):
     return tags or ["other_wrong_result"]
 ```
 
-The relevant Spider eval rows below report the rate of each category among the incorrect predictions of each arm:
+The relevant Spider eval rows below report the rate of each category among the incorrect predictions of each model:
 
 | category | baseline | SFT | RL | RL-v2 |
 |---|---|---|---|---|
@@ -178,9 +182,9 @@ The relevant Spider eval rows below report the rate of each category among the i
 | join_structure_mismatch | 0.2705 | 0.2186 | 0.2219 | 0.2102 |
 | other_wrong_result | 0.2705 | 0.3473 | 0.3376 | 0.3661 |
 
-![Spider eval error mix by arm: structural errors down, value-level errors up](figures/fig2_error_mix_spider_eval.png)
+![Spider eval error mix by model: structural errors down, value-level errors up](figures/fig2_error_mix_spider_eval.png)
 
-Every post-trained arm has a lower schema-column-error rate and a lower join-structure-mismatch rate than baseline. In particular, SFT and RL are better at selecting the correct column and constructing the correct join, which is the kind of structural competence that fine-tuning on gold SQL should teach. However, `other_wrong_result`—the catch-all category for queries that are structurally reasonable but use a wrong value, a wrong-but-plausible column, or a wrong condition—increases from 0.2705 for baseline to about 0.35-0.37 after post-training. Therefore, post-training does not reduce all types of errors uniformly. It replaces some structural errors with value-level errors. On Spider eval, the net effect is still a large accuracy improvement because value-level errors already make up a substantial part of the baseline mistakes. On BIRD eval, the same trade-off remains visible, but the net effect changes sign. This is the mechanism behind the generalization-drop result above rather than a separate phenomenon.
+Every post-trained model has a lower schema-column-error rate and a lower join-structure-mismatch rate than baseline. In particular, SFT and RL are better at selecting the correct column and constructing the correct join, which is the kind of structural competence that fine-tuning on gold SQL should teach. However, `other_wrong_result`—the catch-all category for queries that are structurally reasonable but use a wrong value, a wrong-but-plausible column, or a wrong condition—increases from 0.2705 for baseline to about 0.35-0.37 after post-training. Therefore, post-training does not reduce all types of errors uniformly. It replaces some structural errors with value-level errors. On Spider eval, the net effect is still a large accuracy improvement because value-level errors already make up a substantial part of the baseline mistakes. On BIRD eval, the same trade-off remains visible, but the net effect changes sign. This is the mechanism behind the generalization-drop result above rather than a separate phenomenon.
 
 ### Case studies
 
@@ -240,17 +244,17 @@ WHERE T2.virtual = 'Y' AND T1.avgscrmath > 400;
 
 There are two compounding errors. First, `schools` uses `CDSCode` as its join key rather than `cds`. The prediction assumes that a foreign-key column has the same name in both tables, a pattern that appears frequently in Spider's synthetic schemas but fails here, so the query does not execute and returns `no such column: T2.cds`. Second, even ignoring the execution error, the *logic* is inverted: the gold query filters `Virtual = 'F'` for "exclusively virtual" schools, while the prediction uses `virtual = 'Y'`, which has the wrong polarity for BIRD's specific flag encoding. Neither error is a Spider eval failure mode. Both are specific to BIRD's real-world column-naming and value-encoding conventions. This explains why post-training that corrects Spider-shaped join errors does not necessarily transfer to BIRD-shaped schema and value errors.
 
-### Further examples from the error gallery
+### Additional Error Analysis
 
-The three case studies above cover schema linking, a syntax error, and a generalization failure. The complete per-category galleries are stored in `runs/blog_artifacts/*_gallery.md`, with one file for each arm and dataset, and are regenerated by `scripts/run_blog_artifacts.sh`. They contain real examples for every category in the taxonomy table. The following four examples are all from SFT on Spider eval (`sft_spider_eval_gallery.md`) and cover the remaining categories without repeating the same pattern:
+The three case studies above illustrate schema linking, syntax errors, and out-of-distribution generalization failures. The complete per-category examples are available in `runs/blog_artifacts/*_gallery.md`, with one file for each model and dataset, and can be regenerated using `scripts/run_blog_artifacts.sh`. Here, we present four additional examples from SFT on Spider eval (`sft_spider_eval_gallery.md`) to illustrate the remaining error categories.
 
-**Value grounding — `other_wrong_result`.** For the question "What is the average, minimum, and maximum age for all French singers?", the gold query filters `country = 'France'`, while SFT predicts `Country = "French"`. The column and aggregate functions are correct, but the literal is wrong because the model follows the adjective in the question rather than the value stored in the schema. The query executes without error and returns `None, None, None`, giving a silent and empty-looking wrong answer rather than an execution failure.
+**Value grounding.** For the question "What is the average, minimum, and maximum age for all French singers?", the gold query uses `country = 'France'`, while SFT predicts `Country = "French"`. The selected column and aggregate functions are correct, but the literal value is wrong: the model follows the adjective used in the question instead of the value stored in the database. The query executes successfully but returns `None, None, None`, so the error cannot be detected from execution failure alone.
 
-**Aggregation — reading a stored value as if it needed computing.** For the question "What is the maximum capacity and the average of all stadiums?", the `stadium` table already contains a literal column named `Average` with pre-computed values. Therefore, the gold query is `SELECT max(capacity), average FROM stadium`. SFT instead computes `avg(capacity)` and returns `52500, 10621.67` rather than the gold result `52500, 730`. The aggregation itself is mathematically valid—the model correctly computes a mean—but it identifies the wrong meaning of *average* in this schema.
+**Aggregation semantics.** For the question "What is the maximum capacity and the average of all stadiums?", the `stadium` table contains a column named `Average` whose values are already stored in the database. The gold query is therefore `SELECT max(capacity), average FROM stadium`. SFT instead interprets *average* as an aggregation operation and computes `avg(capacity)`, returning `52500, 10621.67` instead of the gold result `52500, 730`. The aggregation operation itself is valid, but the model assigns the wrong semantic meaning to the word *average* in this schema.
 
-**Order and limit — a subquery collapsed into the wrong comparison.** For the question "How many cars have a larger accelerate than the car with the largest horsepower?", the gold query first uses a subquery to find the `accelerate` value of the car with the largest horsepower and then compares other cars against this value. SFT instead compares directly with `max(horsepower)`, so it compares an acceleration column with a horsepower value. The query still executes, but returns `0` instead of the gold answer `39`.
+**Subquery reasoning.** For the question "How many cars have a larger accelerate than the car with the largest horsepower?", the gold query first uses a subquery to identify the `accelerate` value of the car with the largest horsepower, and then compares the other cars against this value. SFT instead compares `accelerate` directly with `max(horsepower)`. As a result, it compares quantities from two different attributes. The SQL is still executable, but it returns `0` instead of the gold answer `39`.
 
-**Schema reference — a hallucinated table, not just a column.** For the question "Show the name and the release year of the song by the youngest singer.", SFT joins `singer` to a table named `song`. This table does not exist in the database because the song-related fields are stored directly in `singer`. SQLite therefore returns `no such table: song`.
+**Schema hallucination.** For the question "Show the name and the release year of the song by the youngest singer.", SFT joins `singer` with a table named `song`. However, this table does not exist in the database; the song-related attributes are stored directly in `singer`. SQLite therefore returns `no such table: song`. This example shows a table-level schema hallucination rather than the more common case of predicting a nonexistent column.
 
 ### Does the RL algorithm choice matter
 
@@ -275,7 +279,7 @@ else:
 
 The BIRD continue cross-database EX results for all six variants are shown below (`runs/blog_artifacts/experiment2_scorecard.txt`):
 
-| arm | BIRD continue cross-database EX |
+| model | BIRD continue cross-database EX |
 |---|---|
 | rl-continue (GRPO) | 0.2035 |
 | rl-continue-rloo | 0.2054 |
@@ -284,18 +288,18 @@ The BIRD continue cross-database EX results for all six variants are shown below
 | rl-continue-v2-rloo | 0.2007 |
 | rl-continue-v2-drgrpo | 0.2026 |
 
-The total spread across the six variants is 0.0047. On a 1071-example evaluation set, this is an order of magnitude smaller than the gap between the Spider eval and BIRD eval results of any individual arm and is well within noise. Neither changing the advantage estimator nor using the two-phase curriculum in the v2 variants changes this number in a consistent direction. Therefore, this experiment gives a null result rather than evidence in favor of whichever variant happens to obtain the highest value.
+The total spread across the six variants is 0.0047. On a 1071-example evaluation set, this is an order of magnitude smaller than the gap between the Spider eval and BIRD eval results of any individual model and is well within noise. Neither changing the advantage estimator nor using the two-phase curriculum in the v2 variants changes this number in a consistent direction. Therefore, this experiment gives a null result rather than evidence in favor of whichever variant happens to obtain the highest value.
 
 ## A harder test: adapting to BIRD with a little real data
 
 The second experiment is a harder adaptation test. Starting from the Spider-only SFT checkpoint, we continue training on a small pool of 122 real BIRD examples from two schemas, `california_schools` and `debit_card_specializing`. We compare SFT-continue and RL-continue on three evaluation slices: Spider eval, to check whether continuing on BIRD removes Spider competence; the BIRD continue same-schema slice, which uses the same two schemas but unseen questions and therefore serves as a memorization check; and the BIRD continue cross-database slice, which contains seven databases completely disjoint from the training pool and serves as the actual transfer test.
 
-| arm | Spider eval EX | BIRD continue same-schema EX | BIRD continue cross-database EX |
+| model | Spider eval EX | BIRD continue same-schema EX | BIRD continue cross-database EX |
 |---|---|---|---|
 | sft-continue | 0.6973 | 0.2581 (8/31) | 0.2120 |
 | rl-continue | 0.6963 | 0.0323 (1/31) | 0.2035 |
 
-The complete table with all seven continue arms is available at `runs/blog_artifacts/experiment2_scorecard.txt`. Two points should be stated precisely. First, SFT-continue obtains 0.2120 BIRD continue cross-database EX, which is higher than the Spider-only SFT and RL-v2 arms restricted to the same seven databases by +0.0181 and +0.0171, respectively. Thus, continuing on a small amount of real BIRD data does improve transfer relative to not doing so. However, it still does not reach the untouched zero-shot baseline on the same databases, which obtains 0.2236, leaving a gap of -0.0116. In other words, 122 continue-training examples reduce the gap to zero-shot but do not close it.
+The complete table with all seven continue models is available at `runs/blog_artifacts/experiment2_scorecard.txt`. Two points should be stated precisely. First, SFT-continue obtains 0.2120 BIRD continue cross-database EX, which is higher than the Spider-only SFT and RL-v2 models restricted to the same seven databases by +0.0181 and +0.0171, respectively. Thus, continuing on a small amount of real BIRD data does improve transfer relative to not doing so. However, it still does not reach the untouched zero-shot baseline on the same databases, which obtains 0.2236, leaving a gap of -0.0116. In other words, 122 continue-training examples reduce the gap to zero-shot but do not close it.
 
 Second, RL-continue performs much worse on the BIRD continue same-schema slice: it gets only 1 of 31 questions correct, compared with 8 of 31 for SFT-continue. The comparison uses exactly the same 31 questions, the same starting checkpoint, and the same training pool. The training health log at `runs/bird_adapt_rl/health_log.jsonl` helps explain this behavior:
 
@@ -314,4 +318,6 @@ The amount of training data in this project is small compared with SQL-R1, Reaso
 
 ## Reproducibility
 
-Every number, table, and case-study example in this post is produced directly by the repository's own pipeline. The four core arms can be reproduced end to end with `scripts/run_baseline_eval.sh`, `run_sft.sh`, `run_rl_eval.sh`, and `run_bird_eval.sh`; the taxonomy tables use `scripts/error_taxonomy.py` and `compare_error_taxonomy.py`; the BIRD-continue experiment uses `scripts/run_experiment2_chain.sh` and `run_rl_algo_variants_chain.sh`; and `scripts/run_blog_artifacts.sh` regenerates all tables and galleries cited in this post in one pass.
+Every number, table, and case-study example in this post is produced directly by the repository's own pipeline. The four core models can be reproduced end to end with `scripts/run_baseline_eval.sh`, `run_sft.sh`, `run_rl_eval.sh`, and `run_bird_eval.sh`; the taxonomy tables use `scripts/error_taxonomy.py` and `compare_error_taxonomy.py`; the BIRD-continue experiment uses `scripts/run_experiment2_chain.sh` and `run_rl_algo_variants_chain.sh`; and `scripts/run_blog_artifacts.sh` regenerates all tables and galleries cited in this post in one pass.
+
+GitHub: https://github.com/levi-hsu/text-to-sql

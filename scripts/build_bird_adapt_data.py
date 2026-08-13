@@ -21,7 +21,7 @@ discussion this implements. Three-way, db_id-disjoint split of BIRD-dev's
 
 Two starting points matter for correctness here, both learned from the
 main RL v2 run (see configs/rl.yaml's header): (1) the two continuation
-arms (SFT-continue, RL-continue) MUST start from the same SFT-on-Spider
+models (SFT-continue, RL-continue) MUST start from the same SFT-on-Spider
 checkpoint (runs/sft_qwen2.5coder3b/adapter) so the comparison only varies
 the continuation method, not the starting point; (2) the RL continuation
 needs num_generations=4, not 2, to actually get gradient signal on this
@@ -29,7 +29,7 @@ tiny pool -- see configs/bird_adapt_rl.yaml.
 
 Outputs (all under data.out_dir, default data/bird_adapt/):
   bird_train_pool.jsonl        {question, schema, gold_sql, db_id} -- the
-                                 rows both continuation arms train on
+                                 rows both continuation models train on
                                  (train_sft.py / train_rl.py's format)
   bird_pool_heldout.jsonl      same format, for RL's monitor.heldout_jsonl
   bird_pool_heldout_dev.json + bird_pool_heldout_gold.sql

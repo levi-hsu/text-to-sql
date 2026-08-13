@@ -1,4 +1,4 @@
-# Config for the SFT arm (see plan.md, "Arms" -> "SFT arm").
+# Config for the SFT arm (see plan.md, "models" -> "SFT arm").
 # QLoRA: base weights frozen in 4-bit NF4, LoRA adapters trained in bf16.
 # Used by scripts/build_sft_data.py and scripts/train_sft.py.
 # After training, evaluate with configs/sft_eval.yaml + generate_sql.py's

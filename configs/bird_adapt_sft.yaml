@@ -8,7 +8,7 @@
 # configs/bird_adapt_rl.yaml starts from, deliberately NOT checkpoint-500
 # (that was a v2-only intervention for the Spider-overfitting question).
 # Here the only thing that should differ between the SFT-continuation and
-# RL-continuation arms is the continuation method itself.
+# RL-continuation models is the continuation method itself.
 #
 # learning_rate is well below configs/sft.yaml's 2e-4 for the same reason
 # configs/rl.yaml's is below it: this continues an already-competent

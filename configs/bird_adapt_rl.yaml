@@ -5,7 +5,7 @@
 #
 # Starts from runs/sft_qwen2.5coder3b/adapter -- the SAME checkpoint
 # configs/bird_adapt_sft.yaml starts from (see that file's header for why:
-# only the continuation method should differ between the two arms).
+# only the continuation method should differ between the two models).
 #
 # num_generations=4, not 2: this is not optional. The main RL v1 run
 # (configs/rl.yaml before its v2 revision) proved that num_generations=2

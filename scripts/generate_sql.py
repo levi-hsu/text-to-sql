@@ -68,7 +68,7 @@ def load_model_and_tokenizer(model_cfg: dict):
 
     adapter_path = model_cfg.get("adapter")
     if adapter_path:
-        # SFT/RL arms: load the LoRA adapter on top of the frozen base weights
+        # SFT/RL models: load the LoRA adapter on top of the frozen base weights
         # loaded above. The adapter must have been trained against a base
         # model loaded the same way (same load_in_4bit setting) it is
         # loaded here -- train_sft.py always trains in 4-bit NF4, so

@@ -1,7 +1,7 @@
-# Eval config for the RL arm (see plan.md, "Arms" -> "RL arm"). Mirrors
+# Eval config for the RL arm (see plan.md, "models" -> "RL arm"). Mirrors
 # configs/sft_eval.yaml exactly except for the adapter and output dir, so
 # the baseline/SFT/RL comparison only varies the adapter being evaluated,
-# same generation settings (greedy) across all three arms.
+# same generation settings (greedy) across all three models.
 
 model:
   name_or_path: /home/levi/Documents/llm/Qwen2.5-Coder-3B-Instruct

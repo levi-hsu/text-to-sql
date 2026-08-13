@@ -47,7 +47,7 @@ surprising/notable part -> what's released):
    generalizes better from Spider (in-distribution) to BIRD
    (out-of-distribution).
 2. The setup in one sentence: Qwen2.5-Coder-3B-Instruct, QLoRA, three
-   controlled arms (baseline / SFT / RL, plus an RL-v2 variant), scaled
+   controlled models (baseline / SFT / RL, plus an RL-v2 variant), scaled
    down from SQL-R1 / Reasoning-SQL / Arctic-Text2SQL-R1.
 3. The headline quantitative result (real, from
    runs/blog_artifacts/experiment1_scorecard.txt):
@@ -112,12 +112,12 @@ detail -- this section is largely assembly, not new writing.
   out-of-distribution set; BIRD-train excluded (too large for this
   hardware) and Spider-DK dropped from scope (plan.md lines 27-33).
 
-### Experimental arms
+### Experimental models
 - Baseline (zero-shot), SFT (LoRA on filtered Spider-train subset), RL
   (GRPO from the SFT checkpoint, execution-only reward), RL-v2 (same but
   starting from an earlier SFT checkpoint-500, num_generations 2->4, plus
   a partial-credit reward term -- plan.md lines 47-51 and
-  compare_arms.py's header comment for the exact rationale).
+  compare_models.py's header comment for the exact rationale).
 
 ### RL implementation
 - GRPO via TRL's GRPOTrainer, why GRPO over PPO/DPO (plan.md lines 61),
@@ -138,7 +138,7 @@ detail -- this section is largely assembly, not new writing.
   also 0 rows (plan.md lines 55-57, 75). This is a strong, concrete
   paragraph -- keep it close to plan.md's own wording.
 
-# Applying and evaluating the three arms
+# Applying and evaluating the three models
 
 Mirrors the reference's own top-level section name and internal order:
 quantitative results first, then named case studies, then a secondary
@@ -147,7 +147,7 @@ ablation.
 ## Quantitative results
 
 - Full scorecard table: source runs/blog_artifacts/experiment1_scorecard.txt.
-  Both Spider-dev and BIRD-dev, all four arms, plus the generalization
+  Both Spider-dev and BIRD-dev, all four models, plus the generalization
   drop row.
 - Error-taxonomy table: source runs/blog_artifacts/experiment1_error_taxonomy.txt.
   Lead with the real pattern already visible in that file: baseline's
@@ -156,7 +156,7 @@ ablation.
   (schema_column_error drops to 0.24-0.25; join_structure_mismatch drops
   to 0.21-0.22) -- SFT and RL measurably reduce structural/schema-linking
   errors. At the same time, other_wrong_result rises from 0.2705
-  (baseline) to 0.35-0.37 (post-trained arms) -- post-training is
+  (baseline) to 0.35-0.37 (post-trained models) -- post-training is
   trading structural errors for value-level ones (wrong constant, wrong
   column choice among valid columns), the category the regex-based
   taxonomy can't subdivide further. State this as the second major
@@ -178,7 +178,7 @@ examples with real executed results, not constructed illustrations.
    `db_id`/question if one exists in both, or the nearest matching pair.
    [DRAFT -- needs a manual pass to find a same-question pair across
    galleries; error_taxonomy.py's stored examples aren't cross-indexed by
-   question across arms.]
+   question across models.]
 
 2. **What "the model messes up joins" looks like in practice** -- the
    already-surfaced SFT syntax-error example on `dog_kennels`: predicted
@@ -236,7 +236,7 @@ follow-up test beyond the main case studies.
   restricted spider-only baselines on the same db_ids (baseline 0.2236
   restricted -- note sft-continue is still *below* the zero-shot
   baseline here, by -0.0116; it only beats the spider-only SFT/RL-v2
-  arms, by +0.0181/+0.0171). State this precisely -- don't round it up to
+  models, by +0.0181/+0.0171). State this precisely -- don't round it up to
   "continuation training helps," since it only helps relative to
   spider-only post-training, not relative to doing nothing.
 - The striking, real finding worth its own short case study: rl-continue
@@ -297,7 +297,7 @@ concern you already had from the health-monitoring design?
 
 - Link the repo. List the entry points a reader could actually run:
   scripts/run_baseline_eval.sh, run_sft.sh, run_rl_eval.sh,
-  run_bird_eval.sh, error_taxonomy.py, compare_arms.py,
+  run_bird_eval.sh, error_taxonomy.py, compare_models.py,
   compare_error_taxonomy.py, run_blog_artifacts.sh (the exact pipeline
   that produced every number and gallery in this post).
 

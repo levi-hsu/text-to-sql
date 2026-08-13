@@ -1,4 +1,4 @@
-# Config for the zero-shot baseline arm (see plan.md, "Arms" section).
+# Config for the zero-shot baseline arm (see plan.md, "models" section).
 # Qwen2.5-Coder-3B-Instruct, no fine-tuning, evaluated on Spider-dev.
 # BIRD-dev fields are left null until BIRD-dev is downloaded (see plan.md
 # "Open items"); generate_sql.py / eval_sql.py skip a dataset whose paths

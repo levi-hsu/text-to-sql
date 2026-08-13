@@ -1,17 +1,18 @@
 # Text-to-SQL: SFT vs. RL Post-training at 3B Scale
 
-A controlled comparison of supervised fine-tuning (SFT) and reinforcement learning (GRPO) as
-post-training methods for text-to-SQL generation, on a single 8GB-VRAM consumer GPU. Starting
-from Qwen2.5-Coder-3B-Instruct, one QLoRA SFT arm and two GRPO RL arms are trained on the same
-Spider training subset and evaluated in-distribution (Spider eval) and out-of-distribution (BIRD
-eval), alongside a per-category error-taxonomy analysis of what each method actually fixes.
+This project compares supervised fine-tuning (SFT) and reinforcement learning (GRPO) as
+post-training methods for text-to-SQL generation on a single consumer GPU with 8GB VRAM. Starting
+from Qwen2.5-Coder-3B-Instruct, we train one QLoRA SFT models and two GRPO RL models on the same
+Spider training subset, and evaluate them in-distribution on Spider eval and out-of-distribution
+on BIRD eval. We also use a per-category error taxonomy to study which types of errors each
+method actually reduces.
 
-The full write-up, with results, error taxonomy, and case studies, is at
+The full write-up, including the results, error taxonomy, and case studies, is available at
 [`blog/blog.md`](blog/blog.md).
 
-## Headline results
+## Main results
 
-| arm | Spider eval EX | BIRD eval EX | Spider → BIRD drop |
+| models | Spider eval EX | BIRD eval EX | Spider → BIRD drop |
 |---|---|---|---|
 | baseline (zero-shot) | 0.6083 | 0.2073 | 0.4010 |
 | SFT | 0.6973 | 0.1877 | 0.5095 |
@@ -19,7 +20,8 @@ The full write-up, with results, error taxonomy, and case studies, is at
 | RL-v2 | 0.7128 | 0.1851 | 0.5276 |
 
 Post-training clearly improves in-distribution accuracy, but every post-trained arm generalizes
-*worse* than doing nothing. See `blog/blog.md` for the error-taxonomy analysis that explains why.
+*worse* than the zero-shot baseline. See `blog/blog.md` for the error-taxonomy analysis and a
+more detailed explanation of this result.
 
 ## What's in this repo
 
@@ -31,7 +33,7 @@ data/       Small, checked-in JSONL files: the exact filtered training/eval subs
 runs/       Training/eval outputs -- NOT checked in, see below
 ```
 
-## What is *not* in this repo, and why
+## What is *not* in this repo
 
 **Model weights are not pushed to GitHub.** This includes:
 
@@ -39,7 +41,7 @@ runs/       Training/eval outputs -- NOT checked in, see below
   Face (`Qwen/Qwen2.5-Coder-3B-Instruct`) and point `model.name_or_path` in the relevant config
   file at your local copy.
 - All trained LoRA adapters and checkpoints under `runs/` (SFT, RL, RL-v2, and the BIRD-adapt
-  variants) — `runs/` is ~16GB across all arms and is gitignored in full. Every adapter is fully
+  variants) — `runs/` is ~16GB across all models and is gitignored in full. Every adapter is fully
   reproducible from the configs and scripts in this repo (see below); the exact command for each
   arm is documented in `blog/blog.md`'s Reproducibility section.
 - Raw Spider and BIRD data under `data/spider_data/` and `data/bird-dev/` (~1.8GB each) and
@@ -49,14 +51,15 @@ runs/       Training/eval outputs -- NOT checked in, see below
     `xlangai/spider` dataset on Hugging Face
   - BIRD: [bird-bench.github.io](https://bird-bench.github.io)
 
-  The small JSONL files under `data/sft/` and `data/bird_adapt/` *are* checked in — these are the
-  filtered/derived subsets this project actually trains on (a few MB), not the raw datasets, so
-  they're cheap to keep and make the exact training data auditable.
+  The small JSONL files under `data/sft/` and `data/bird_adapt/` *are* checked in. These are the
+  filtered or derived subsets actually used for training, rather than the raw datasets. They are
+  only a few MB, so keeping them in the repository also makes the exact training data easy to
+  inspect.
 
-If you want a runnable adapter without retraining, the lightest option is to push the specific
-adapter directory you care about (e.g. `runs/sft_qwen2.5coder3b/adapter`, ~126MB) to the
-[Hugging Face Hub](https://huggingface.co/new) instead of GitHub, and link it here — GitHub isn't
-a good fit for binary model artifacts even at that size.
+If you want to provide a runnable adapter without requiring retraining, the simplest option is
+to upload the specific adapter directory you need (e.g. `runs/sft_qwen2.5coder3b/adapter`,
+~126MB) to the [Hugging Face Hub](https://huggingface.co/new) and link it here. GitHub is not
+well suited for binary model artifacts, even at this size.
 
 ## Setup
 
@@ -64,32 +67,35 @@ a good fit for binary model artifacts even at that size.
 pip install -r requirements.txt
 ```
 
-`torch` is intentionally left out of `requirements.txt` — install the CUDA build matching your
-driver first (check `nvidia-smi`), per instructions at [pytorch.org](https://pytorch.org).
+`torch` is intentionally excluded from `requirements.txt`. Install the CUDA build that matches
+your driver first (check `nvidia-smi`), following the instructions at
+[pytorch.org](https://pytorch.org).
 
-Hardware this was developed and run on: RTX 4060 Laptop GPU (8GB VRAM), 16GB system RAM, no swap.
-QLoRA (4-bit NF4 base weights, bf16 LoRA adapters) keeps every arm inside that budget.
+The experiments were developed and run on an RTX 4060 Laptop GPU with 8GB VRAM, 16GB system
+RAM, and no swap. QLoRA, with 4-bit NF4 base weights and bf16 LoRA adapters, keeps every arm
+within this hardware budget.
 
 ## Reproducing the results
 
-Each script is meant to be run from the project root:
+Each script should be run from the project root:
 
 ```bash
 bash scripts/run_baseline_eval.sh   # zero-shot baseline, Spider eval + BIRD eval
 bash scripts/run_sft.sh             # QLoRA SFT arm: train + evaluate
 bash scripts/run_rl_eval.sh         # RL arm (GRPO from the SFT checkpoint)
 bash scripts/run_rl_eval_v2.sh      # RL-v2 arm (more rollouts + partial-credit reward)
-bash scripts/run_bird_eval.sh       # scores all arms' existing checkpoints on BIRD eval
+bash scripts/run_bird_eval.sh       # scores all models' existing checkpoints on BIRD eval
 bash scripts/run_experiment2_chain.sh        # BIRD-continue adaptation experiment
 bash scripts/run_rl_algo_variants_chain.sh   # RLOO / Dr. GRPO algorithm-swap replicates
 bash scripts/run_blog_artifacts.sh  # regenerates every table and figure cited in blog/blog.md
 ```
 
-Each run writes its outputs (adapter, predictions, scorecards, health logs) to `runs/<arm-name>/`.
+Each run writes its outputs, including the adapter, predictions, scorecards, and health logs, to
+`runs/<arm-name>/`.
 
 ## Limitations
 
-Training data volume is small relative to the large-scale papers this project scales down from
-(SQL-R1, Reasoning-SQL, Arctic-Text2SQL-R1), so absolute accuracy numbers should not be compared
-directly to their published results. The generalization measure rests on a single OOD set (BIRD
-eval); see `blog/blog.md` for the full discussion.
+The training data used here is small relative to the large-scale studies this project is based on
+(SQL-R1, Reasoning-SQL, and Arctic-Text2SQL-R1), so the absolute accuracy numbers should not be
+compared directly with their published results. The generalization analysis also uses only one
+OOD dataset, BIRD eval. See `blog/blog.md` for a more complete discussion of these limitations.

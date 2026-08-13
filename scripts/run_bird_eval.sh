@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# BIRD-dev (out-of-distribution) eval for all four arms -- baseline, SFT,
+# BIRD-dev (out-of-distribution) eval for all four models -- baseline, SFT,
 # RL, RL-v2 -- against their already-trained checkpoints. No training
 # happens here: this only calls generate_sql.py/eval_sql.py, reusing each
 # arm's existing eval config (configs/baseline.yaml, configs/sft_eval.yaml,
@@ -9,7 +9,7 @@
 # run_sft.sh / run_rl_eval.sh / run_rl_eval_v2.sh).
 #
 # This is the second half of plan.md's generalization measure: the drop
-# from Spider-dev to BIRD-dev, per arm. Run scripts/compare_arms.py after
+# from Spider-dev to BIRD-dev, per arm. Run scripts/compare_models.py after
 # this to see it computed.
 #
 # The rl_v2 line below requires runs/rl_qwen2.5coder3b_v2/adapter to exist,

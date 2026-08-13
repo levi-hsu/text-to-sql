@@ -1,4 +1,4 @@
-# Eval config for the SFT arm (see plan.md, "Arms" -> "SFT arm").
+# Eval config for the SFT arm (see plan.md, "models" -> "SFT arm").
 # Same base model + same generation settings as configs/baseline.yaml, so
 # the baseline-vs-SFT comparison only varies the adapter. load_in_4bit is
 # true here (unlike baseline.yaml) because train_sft.py trains the LoRA

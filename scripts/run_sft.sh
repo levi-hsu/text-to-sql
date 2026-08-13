@@ -2,7 +2,7 @@
 # SFT arm end-to-end: build training subset, QLoRA fine-tune, evaluate on
 # Spider-dev. Run from the project root: bash scripts/run_sft.sh
 #
-# BIRD-dev is scored separately for all three arms at once by
+# BIRD-dev is scored separately for all three models at once by
 # scripts/run_bird_eval.sh, against the adapter this script produces -- it
 # doesn't retrain anything, so it's kept out of this pipeline.
 

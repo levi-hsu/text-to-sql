@@ -5,7 +5,7 @@
 # only varies the adapter being evaluated. Run from the project root:
 #   bash scripts/run_rl_eval.sh
 #
-# BIRD-dev is scored separately for all three arms at once by
+# BIRD-dev is scored separately for all three models at once by
 # scripts/run_bird_eval.sh, against the adapter this script produces -- it
 # doesn't retrain anything, so it's kept out of this pipeline.
 

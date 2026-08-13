@@ -2,7 +2,7 @@
 # Baseline arm end-to-end: zero-shot Qwen2.5-Coder-3B-Instruct on Spider-dev.
 # Run from the project root: bash scripts/run_baseline_eval.sh
 #
-# BIRD-dev is scored separately for all three arms at once by
+# BIRD-dev is scored separately for all three models at once by
 # scripts/run_bird_eval.sh (no retraining involved, so it doesn't belong
 # inside this or run_sft.sh's pipeline).
 

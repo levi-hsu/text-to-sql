@@ -19,7 +19,7 @@ import os
 
 from error_taxonomy import CATEGORY_PRIORITY, build_report
 
-ARMS = [
+models = [
     ("baseline", "runs/baseline_qwen2.5coder3b/spider_dev_results.json", "runs/baseline_qwen2.5coder3b/bird_dev_results.json"),
     ("sft", "runs/sft_qwen2.5coder3b_eval/spider_dev_results.json", "runs/sft_qwen2.5coder3b_eval/bird_dev_results.json"),
     ("rl", "runs/rl_qwen2.5coder3b_eval/spider_dev_results.json", "runs/rl_qwen2.5coder3b_eval/bird_dev_results.json"),
@@ -66,7 +66,7 @@ def print_table(reports_by_arm: dict, dataset_label: str):
 def main():
     spider_reports = {}
     bird_reports = {}
-    for name, spider_path, bird_path in ARMS:
+    for name, spider_path, bird_path in models:
         spider_reports[name] = load_and_report(spider_path)
         bird_reports[name] = load_and_report(bird_path)
 

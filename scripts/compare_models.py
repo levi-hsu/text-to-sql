@@ -1,4 +1,4 @@
-"""Print a side-by-side execution-accuracy comparison across all arms
+"""Print a side-by-side execution-accuracy comparison across all models
 (baseline, SFT, RL, RL-v2) on both Spider eval (in-distribution) and
 BIRD eval (out-of-distribution), reading each arm's eval_sql.py summary
 directly rather than re-deriving numbers by hand. Also prints the
@@ -9,7 +9,7 @@ generalization from that post-training method.
 NOTE on naming: "Spider eval" / "BIRD eval" are display labels only, used
 in the printed output below. The underlying files are still
 data/spider_data/dev.json and data/bird-dev/dev.json (Spider's and BIRD's
-own "dev" split), and the *_dev_results.json paths in ARMS below are left
+own "dev" split), and the *_dev_results.json paths in models below are left
 unchanged -- renaming those would mean renaming actual run directories and
 every config that references them. Only what gets printed changed, because
 "dev" reads as "used to tune something" when both are actually the only
@@ -25,7 +25,7 @@ examples) and a worse Spider->BIRD drop than baseline; rl_v2 exists to test
 whether those three changes fix that.
 
 Usage:
-  python scripts/compare_arms.py
+  python scripts/compare_models.py
 """
 
 import json
@@ -36,7 +36,7 @@ import os
 # change if the display naming changes again.
 SET_LABELS = {"spider": "Spider eval", "bird": "BIRD eval"}
 
-ARMS = [
+models = [
     (
         "baseline",
         "runs/baseline_qwen2.5coder3b/spider_dev_results.json",
@@ -75,7 +75,7 @@ def print_delta(label, a, b):
 
 def main():
     rows = {}
-    for name, spider_path, bird_path in ARMS:
+    for name, spider_path, bird_path in models:
         rows[name] = {
             "spider": load_summary(spider_path),
             "bird": load_summary(bird_path),
@@ -84,7 +84,7 @@ def main():
     header = f"{'arm':<10}{'set':<12}{'total':>8}{'correct':>10}{'exec_acc':>12}{'pred_err':>10}"
     print(header)
     print("-" * len(header))
-    for name, _, _ in ARMS:
+    for name, _, _ in models:
         for set_name in ("spider", "bird"):
             summary = rows[name][set_name]
             label = SET_LABELS[set_name]
@@ -126,7 +126,7 @@ def main():
 
     print("\n-- Spider eval -> BIRD eval drop per arm (generalization measure, plan.md) --")
     print("Smaller drop = better generalization from that post-training method.")
-    for name, _, _ in ARMS:
+    for name, _, _ in models:
         spider = rows[name]["spider"]
         bird = rows[name]["bird"]
         if spider is None or bird is None:

@@ -1,4 +1,4 @@
-"""GRPO RL post-training for the RL arm (see plan.md, "Arms" -> "RL arm",
+"""GRPO RL post-training for the RL arm (see plan.md, "models" -> "RL arm",
 "Pre-RL SFT sanity check", and the RL-algorithm-choice discussion this
 implements). Continues training the SFT arm's LoRA adapter with TRL's
 GRPOTrainer, using the execution-based reward in rl_reward.py, monitored by

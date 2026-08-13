@@ -8,11 +8,11 @@
 #
 # What it does, in order:
 #   1. Refreshes the core 4-arm (baseline/SFT/RL/RL-v2) scorecard and error
-#      taxonomy on Spider eval and BIRD eval (scripts/compare_arms.py,
+#      taxonomy on Spider eval and BIRD eval (scripts/compare_models.py,
 #      scripts/compare_error_taxonomy.py). compare_error_taxonomy.py also
 #      (re)writes each arm's *_taxonomy.json as a side effect.
 #   2. Backfills *_taxonomy.json for Experiment 2's 7 bird_adapt
-#      continue arms x 3 slices (Spider eval EX, BIRD continue
+#      continue models x 3 slices (Spider eval EX, BIRD continue
 #      same-schema EX, BIRD continue cross-database EX) --
 #      scripts/compare_bird_adapt.py only
 #      reports accuracy, it never called scripts/error_taxonomy.py, so
@@ -20,7 +20,7 @@
 #      scripts/compare_bird_adapt.py for the refreshed accuracy scorecard.
 #   3. Renders real gold-vs-predicted example galleries (markdown, one
 #      section per error category, real question + real executed result
-#      rows) via scripts/select_blog_examples.py, for the four core arms
+#      rows) via scripts/select_blog_examples.py, for the four core models
 #      on Spider eval and for SFT/RL-v2 on BIRD eval -- the generalization
 #      comparison plan.md's "Metrics" section calls out.
 #   4. Regenerates both blog figures (scripts/make_blog_figures.py), since
@@ -53,14 +53,14 @@ cd "$(dirname "$0")/.."
 OUT_DIR="runs/blog_artifacts"
 mkdir -p "$OUT_DIR"
 
-echo "[$(date)] === python scripts/compare_arms.py ==="
-python scripts/compare_arms.py | tee "$OUT_DIR/experiment1_scorecard.txt"
+echo "[$(date)] === python scripts/compare_models.py ==="
+python scripts/compare_models.py | tee "$OUT_DIR/experiment1_scorecard.txt"
 
 echo "[$(date)] === python scripts/compare_error_taxonomy.py ==="
 python scripts/compare_error_taxonomy.py | tee "$OUT_DIR/experiment1_error_taxonomy.txt"
 
-echo "[$(date)] === backfilling Experiment 2 (bird_adapt) error taxonomy, 7 arms x 3 slices ==="
-BIRD_ADAPT_ARMS=(
+echo "[$(date)] === backfilling Experiment 2 (bird_adapt) error taxonomy, 7 models x 3 slices ==="
+BIRD_ADAPT_models=(
   bird_adapt_sft_eval
   bird_adapt_rl_eval
   bird_adapt_rl_v2_eval
@@ -69,7 +69,7 @@ BIRD_ADAPT_ARMS=(
   bird_adapt_rl_v2_rloo_eval
   bird_adapt_rl_v2_drgrpo_eval
 )
-for RUN_DIR in "${BIRD_ADAPT_ARMS[@]}"; do
+for RUN_DIR in "${BIRD_ADAPT_models[@]}"; do
   for RESULTS in spider_dev_results.json bird_pool_heldout_results.json bird_crossdb_results.json; do
     SRC="runs/$RUN_DIR/$RESULTS"
     if [[ -f "$SRC" ]]; then

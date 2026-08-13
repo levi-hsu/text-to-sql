@@ -27,8 +27,8 @@
 # Then evaluates both new adapters per algo on all three slices
 # (spider_retention, pool_heldout, crossdb_transfer), and finally reruns
 # scripts/compare_bird_adapt.py once at the end, which now reports all 7
-# continuation arms together (sft-continue, rl-continue, rl-continue-v2,
-# and the 4 new algo-swap arms).
+# continuation models together (sft-continue, rl-continue, rl-continue-v2,
+# and the 4 new algo-swap models).
 #
 # Does NOT touch scripts/bucket_bird_pool_by_difficulty.py or either of
 # data/bird_adapt/bird_train_pool.jsonl / bird_train_pool_reachable.jsonl --

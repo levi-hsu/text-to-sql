@@ -24,13 +24,13 @@ Usage:
 import json
 import os
 
-ORIGINAL_ARMS = [
+ORIGINAL_models = [
     ("baseline", "runs/baseline_qwen2.5coder3b/bird_dev_results.json"),
     ("sft (spider-only)", "runs/sft_qwen2.5coder3b_eval/bird_dev_results.json"),
     ("rl_v2 (spider-only)", "runs/rl_qwen2.5coder3b_v2_eval/bird_dev_results.json"),
 ]
 
-NEW_ARMS = [
+NEW_models = [
     ("sft-continue", "runs/bird_adapt_sft_eval"),
     ("rl-continue", "runs/bird_adapt_rl_eval"),
 ]
@@ -95,9 +95,9 @@ def main():
         keys = load_gold_keys(gold_path)
         print(f"{len(keys)} questions in this split\n")
 
-        print("-- BEFORE (spider-only arms, accuracy on these exact questions) --")
+        print("-- BEFORE (spider-only models, accuracy on these exact questions) --")
         before = {}
-        for name, path in ORIGINAL_ARMS:
+        for name, path in ORIGINAL_models:
             if not os.path.exists(path):
                 print(f"  {name:<22}-- missing --")
                 continue
@@ -106,8 +106,8 @@ def main():
             note = f" ({r['unmatched']} unmatched)" if r["unmatched"] else ""
             print(f"  {name:<22}matched={r['matched']:>5}  correct={r['correct']:>5}  accuracy={r['accuracy']:.4f}{note}")
 
-        print("\n-- AFTER (continuation arms, on the same split) --")
-        for name, run_dir in NEW_ARMS:
+        print("\n-- AFTER (continuation models, on the same split) --")
+        for name, run_dir in NEW_models:
             summary = new_arm_summary(run_dir, results_filename)
             if summary is None:
                 print(f"  {name:<22}-- not yet evaluated --")
@@ -116,7 +116,7 @@ def main():
                   f"accuracy={summary['execution_accuracy']:.4f}")
 
         print("\n-- DELTA (after minus each before) --")
-        for name, run_dir in NEW_ARMS:
+        for name, run_dir in NEW_models:
             summary = new_arm_summary(run_dir, results_filename)
             if summary is None:
                 continue

@@ -26,7 +26,7 @@ Also recomputes the original baseline/SFT(spider-only)/RL-v2(spider-only)
 execution accuracy RESTRICTED to just the crossdb-eval db_ids -- not their
 full 1534-example BIRD eval number, which includes the two pool databases
 and would not be a fair comparison against crossdb_transfer's 1381-example
-set. This is the apples-to-apples baseline the new arms need to beat.
+set. This is the apples-to-apples baseline the new models need to beat.
 
 Usage:
   python scripts/compare_bird_adapt.py
@@ -45,17 +45,17 @@ SLICE_LABELS = {
     "crossdb_transfer": "BIRD continue cross-database EX",
 }
 
-ORIGINAL_ARMS = [
+ORIGINAL_models = [
     ("baseline", "runs/baseline_qwen2.5coder3b/bird_dev_results.json"),
     ("sft (spider-only)", "runs/sft_qwen2.5coder3b_eval/bird_dev_results.json"),
     ("rl_v2 (spider-only)", "runs/rl_qwen2.5coder3b_v2_eval/bird_dev_results.json"),
 ]
 
-NEW_ARMS = [
+NEW_models = [
     ("sft-continue", "runs/bird_adapt_sft_eval"),
     ("rl-continue", "runs/bird_adapt_rl_eval"),
     ("rl-continue-v2", "runs/bird_adapt_rl_v2_eval"),
-    # Algorithm-swap replicates -- same checkpoint, same data as the two arms
+    # Algorithm-swap replicates -- same checkpoint, same data as the two models
     # above, only the RL algorithm differs (see
     # scripts/run_rl_algo_variants_chain.sh and configs/bird_adapt_rl_rloo.yaml
     # / _drgrpo.yaml / bird_adapt_rl_v2_phase{1,2}_rloo.yaml / _drgrpo.yaml).
@@ -102,9 +102,9 @@ def main():
     db_ids = crossdb_db_ids()
     print(f"crossdb-eval db_ids ({len(db_ids)}): {sorted(db_ids)}\n")
 
-    print("=== Original arms, RESTRICTED to the crossdb-eval db_ids (apples-to-apples baseline) ===")
+    print("=== Original models, RESTRICTED to the crossdb-eval db_ids (apples-to-apples baseline) ===")
     restricted = {}
-    for name, path in ORIGINAL_ARMS:
+    for name, path in ORIGINAL_models:
         if not os.path.exists(path):
             print(f"{name:<24}-- missing --")
             continue
@@ -112,11 +112,11 @@ def main():
         restricted[name] = r
         print(f"{name:<24}total={r['total']:>5}  correct={r['correct']:>5}  exec_acc={r['execution_accuracy']:.4f}")
 
-    print("\n=== New continue arms, all three slices ===")
+    print("\n=== New continue models, all three slices ===")
     header = f"{'arm':<24}{'slice':<34}{'total':>8}{'correct':>10}{'exec_acc':>12}"
     print(header)
     print("-" * len(header))
-    for name, run_dir in NEW_ARMS:
+    for name, run_dir in NEW_models:
         for slice_name, fname in SLICES:
             label = SLICE_LABELS[slice_name]
             path = os.path.join(run_dir, fname)
@@ -129,8 +129,8 @@ def main():
                 f"{summary['correct']:>10}{summary['execution_accuracy']:>12.4f}"
             )
 
-    print("\n=== The actual question: does either continue arm beat the spider-only arms on the SAME cross-database questions? ===")
-    for name, run_dir in NEW_ARMS:
+    print("\n=== The actual question: does either continue arm beat the spider-only models on the SAME cross-database questions? ===")
+    for name, run_dir in NEW_models:
         path = os.path.join(run_dir, "bird_crossdb_results.json")
         summary = load_summary(path)
         if summary is None:

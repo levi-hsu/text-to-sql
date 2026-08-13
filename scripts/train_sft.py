@@ -1,4 +1,4 @@
-"""QLoRA SFT training for the SFT arm (see plan.md, "Arms" / "Model").
+"""QLoRA SFT training for the SFT arm (see plan.md, "models" / "Model").
 
 Base weights are quantized to 4-bit NF4 at load time via bitsandbytes and
 frozen; LoRA adapters are trained on top in bf16. Only the adapter is
