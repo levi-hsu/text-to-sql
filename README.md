@@ -2,7 +2,7 @@
 
 This project compares supervised fine-tuning (SFT) and reinforcement learning (GRPO) as
 post-training methods for text-to-SQL generation on a single consumer GPU with 8GB VRAM. Starting
-from Qwen2.5-Coder-3B-Instruct, we train one QLoRA SFT models and two GRPO RL models on the same
+from Qwen2.5-Coder-3B-Instruct, we train one QLoRA SFT model and two GRPO RL models on the same
 Spider training subset, and evaluate them in-distribution on Spider eval and out-of-distribution
 on BIRD eval. We also use a per-category error taxonomy to study which types of errors each
 method actually reduces.
