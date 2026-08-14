@@ -8,7 +8,7 @@ on BIRD eval. We also use a per-category error taxonomy to study which types of 
 method actually reduces.
 
 The full write-up, including the results, error analysis, and case studies, is available at
-[`blog/blog.md`](blog/blog.md).
+[this page](https://levi-hsu.github.io/blog/2026/text-to-sql/).
 
 ## Main results
 
