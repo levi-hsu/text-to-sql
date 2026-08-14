@@ -7,7 +7,7 @@ Spider training subset, and evaluate them in-distribution on Spider eval and out
 on BIRD eval. We also use a per-category error taxonomy to study which types of errors each
 method actually reduces.
 
-The full write-up, including the results, error taxonomy, and case studies, is available at
+The full write-up, including the results, error analysis, and case studies, is available at
 [`blog/blog.md`](blog/blog.md).
 
 ## Main results
@@ -20,7 +20,7 @@ The full write-up, including the results, error taxonomy, and case studies, is a
 | RL-v2 | 0.7128 | 0.1851 | 0.5276 |
 
 Post-training clearly improves in-distribution accuracy, but every post-trained arm generalizes
-*worse* than the zero-shot baseline. See `blog/blog.md` for the error-taxonomy analysis and a
+*worse* than the zero-shot baseline. See `blog/blog.md` for the error analysis and a
 more detailed explanation of this result.
 
 ## What's in this repo
