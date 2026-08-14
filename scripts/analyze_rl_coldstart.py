@@ -1,26 +1,3 @@
-"""Was RL-continue's pool-heldout collapse (1/31) a regression, or did it
-just fail to move a starting point that was already bad? Reconstructs the
-"before" accuracy of baseline/SFT(spider-only)/RL-v2(spider-only) on the
-EXACT SAME questions used in bird_adapt's pool_heldout and crossdb_eval
-splits, by joining eval_sql.py's original bird_dev_results.json (db_id,
-gold_sql, match) against build_bird_adapt_data.py's split files on
-(db_id, gold_sql) -- gold_sql text is reproduced identically in both,
-since both are ultimately rendered from the same dev.json "SQL" field with
-the same trailing-semicolon-stripped convention (see
-build_bird_adapt_data.py's write_dev_and_gold).
-
-This is the "cold start" check the GRPO/RLVR literature on reward sparsity
-would predict matters: if the SFT-on-Spider starting checkpoint already
-scored near-zero on these 31 pool-heldout questions before any BIRD-slice
-training, RL-continue's 0.0323 is "barely moved from an already-bad
-starting point," not "made things worse." If the starting checkpoint
-scored comparably to its overall BIRD rate (~19-20%) on these same 31
-questions, RL-continue's 0.0323 is a real, large regression.
-
-Usage:
-  python scripts/analyze_rl_coldstart.py
-"""
-
 import json
 import os
 

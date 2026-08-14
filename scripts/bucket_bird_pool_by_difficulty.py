@@ -1,33 +1,3 @@
-"""Curriculum step 1 for RL-continue-v2: bucket the fixed 122-example BIRD
-training pool by how "reachable" each example already is for the shared
-starting checkpoint, BEFORE any BIRD-slice training. This is what the
-first RL-continue attempt was missing -- health_log.jsonl showed
-frac_reward_zero_std/low reward the entire run because most groups were
-either all-correct or (mostly) all-wrong for the starting policy, leaving
-GRPO's (r - mean) / std advantage undefined or unhelpful most of the time.
-
-Adds NO new examples -- same 122 rows as bird_train_pool.jsonl throughout,
-this only classifies and reorders them. For each example: generate
-num_generations samples with the SAME sampling settings configs/bird_adapt_rl.yaml
-used (temperature 1.3), score each with the real execution reward, and
-bucket by how many of the samples were exactly correct:
-  hard   : 0 correct out of N   -- no learnable signal, a zero-variance group
-  mixed  : 1..N-1 correct       -- the useful bucket, has within-group reward
-                                    variance for GRPO to compute a real advantage from
-  easy   : N correct            -- already solved, little left to learn
-
-Writes bird_train_pool_reachable.jsonl (the "mixed" bucket only) for
-curriculum phase 1 (configs/bird_adapt_rl_v2_phase1.yaml), and
-bucket_report.json with the full breakdown for inspection.
-
-Usage:
-  python scripts/bucket_bird_pool_by_difficulty.py \
-      --adapter runs/sft_qwen2.5coder3b/adapter \
-      --pool data/bird_adapt/bird_train_pool.jsonl \
-      --db-dir data/bird-dev/dev_databases \
-      --out-dir data/bird_adapt
-"""
-
 import argparse
 import json
 import os

@@ -1,74 +1,3 @@
-"""Pre-RL sanity check on an SFT checkpoint (see plan.md, RL arm).
-
-RL is initialized from the SFT checkpoint and can only refine behavior the
-checkpoint already exhibits -- it will amplify, not fix, a checkpoint that is
-already degenerate (collapsed to a handful of templates, hallucinating schema
-elements, or padding/truncating outputs). This script is meant to run once,
-after train_sft.py + generate_sql.py + eval_sql.py have produced results for
-the SFT arm on Spider-dev, and before scripts/train_rl.py starts. It checks
-five things beyond plain execution accuracy, which eval_sql.py already
-reports but does not diagnose:
-
-  1. execution accuracy / predicted-query execution-error rate (pulled
-     straight from eval_sql.py's summary, repeated here for one-report
-     convenience)
-  2. degenerate-output rate: predictions that are empty, a placeholder
-     ("SELECT 1", "SELECT 1=0" -- see generate_sql.py's extract_sql fallback),
-     or otherwise trivially short
-  3. output length distribution (char and whitespace-token counts), to catch
-     truncation (hitting max_new_tokens) or runaway verbosity
-  4. template diversity: predictions are normalized (literals and whitespace
-     stripped) and grouped; low distinct-template ratio or low entropy means
-     the checkpoint has collapsed onto a few canned query shapes rather than
-     actually conditioning on the question
-  5. schema-hallucination rate: quoted identifiers in the predicted SQL that
-     do not exist in that example's db_id schema (tables.json), which a
-     naive execution-accuracy number can hide when the hallucinated query
-     happens not to error out. Table aliases (e.g. "students" AS "s") are
-     resolved first, so "s"."name" is checked against students's own
-     columns rather than either flagging "s" itself or checking "name"
-     against the whole database's pooled column set -- see the NOTE in
-     check_schema_hallucination() for what this still cannot catch, and
-     scripts/calibrate_hallucination_floor.py for measuring this check's
-     own residual false-positive rate against gold SQL
-
-This is a heuristic, regex-based check (matching the identifier-quoting
-convention schema_utils.py and prompt_template.py already use), not a full
-SQL parser -- see NOTE in check_schema_hallucination() for what it misses.
-
---max-hallucination-rate's default (0.03) is not arbitrary: it was set by
-running scripts/calibrate_hallucination_floor.py against Spider-dev's own
-gold SQL, which measures this check's own false-positive rate on queries
-that are correct by construction. That floor is currently 0.0000 (0/1034)
-after fixing an earlier version of this check that misread Spider gold's
-double-quoted string literals, e.g. WHERE "Airline" = "JetBlue Airways", as
-identifiers -- SQLite accepts double-quoted string literals as a fallback
-when a token doesn't match a real identifier, and Spider's gold SQL relies
-on that. The zero-shot baseline arm was checked too and is uninformative as
-a calibration point: 0/1034 of its predictions contain any double-quoted
-token at all, so its 0.0000 rate reflects the check being blind to that
-arm's output, not the baseline model actually grounding its column
-references. 0.03 leaves a small margin above the measured 0.0000 floor for
-the check's documented residual gaps (see check_schema_hallucination's NOTE)
-on real model output, which is shaped differently from Spider's gold SQL and
-may hit those gaps more often than gold does -- it is not intended to
-tolerate real hallucination from the model being evaluated. Re-run the
-calibration script after the SFT arm's predictions exist, since a
-model-specific floor (e.g. checking the SFT model's *correct* predictions,
-where available) would be a tighter and more direct calibration than the
-gold-SQL floor alone.
-
-Usage:
-  python scripts/check_sft_checkpoint.py \
-      --raw runs/sft_qwen2.5coder3b_eval/spider_dev_raw.jsonl \
-      --results runs/sft_qwen2.5coder3b_eval/spider_dev_results.json \
-      --tables data/spider_data/tables.json \
-      --output runs/sft_qwen2.5coder3b_eval/sft_sanity_report.json
-
-Exits 0 if all checks pass their threshold, 1 otherwise, so it can gate a
-run_rl.sh script (`python scripts/check_sft_checkpoint.py ... || exit 1`).
-"""
-
 import argparse
 import json
 import math
@@ -246,34 +175,6 @@ def build_alias_map(pred_sql: str, table_names: Set[str]) -> Dict[str, str]:
 
 
 def check_schema_hallucination(records: List[dict], tables_by_db: Dict[str, dict]) -> dict:
-    """Option B: resolve "alias"."col" references to the specific table the
-    alias is bound to (or the table itself, if unaliased), and check "col"
-    against that table's own columns rather than the whole database's pooled
-    column set. This both removes the Option-A false positive on the alias
-    token itself (e.g. "s" in "s"."name" is no longer checked against the
-    schema as if it were a column) and catches a class of error Option A
-    cannot: a real column name attached to the wrong table, e.g. "s"."dept_id"
-    where dept_id exists in the schema but not on the table "s" is aliased to.
-
-    NOTE: still heuristic, not a full parser. Three known gaps: (1) only
-    double-quoted identifiers are seen at all, so unquoted/backtick/bracket
-    references are invisible to this check (undercounts); (2) when the alias
-    cannot be resolved -- CTEs, subquery aliases, or any "AS" binding whose
-    left-hand side is not a base-table name -- this falls back to checking
-    the column half against the whole-schema pool, same as before, rather
-    than flagging the unresolved alias itself (residual overcount risk on
-    that fallback path only); (3) standalone quoted tokens immediately
-    preceded by a comparison operator or LIKE/IN/IS are treated as string
-    literals, not identifiers, and skipped entirely (calibration against
-    gold SQL showed this is the dominant source of false positives, e.g.
-    WHERE "Airline" = "JetBlue Airways" -- see
-    scripts/calibrate_hallucination_floor.py), but this is a positional
-    heuristic, not a parse, so an unusual literal position could still slip
-    through unflagged as a value when it was in fact meant as an identifier.
-    Run scripts/calibrate_hallucination_floor.py against gold SQL to measure
-    this check's own residual false-positive rate empirically instead of
-    assuming it is zero.
-    """
     n_with_hallucination = 0
     examples = []
     for i, r in enumerate(records):

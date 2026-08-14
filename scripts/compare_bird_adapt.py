@@ -1,37 +1,3 @@
-"""Experiment 2 comparison: SFT-continue vs RL-continue, both
-starting from the same Spider-only SFT checkpoint, both given the same
-small BIRD eval training pool, carved out of BIRD eval itself rather than
-from BIRD train's official split (scripts/build_bird_adapt_data.py) --
-BIRD train remains entirely unused throughout this project.
-
-Reports three slices per continue arm, display names matching draft.md:
-  Spider eval EX               (spider_retention key below) : did
-                                continuing on BIRD forget Spider competence?
-  BIRD continue same-schema EX (pool_heldout key below)      : same 2
-                                schemas as training, unseen questions --
-                                memorization check.
-  BIRD continue cross-database EX (crossdb_transfer key below) : the 7
-                                databases entirely disjoint from the
-                                training pool -- the actual generalization
-                                -transfer test, and the number that answers
-                                Experiment 2's question. (Not 9 -- an
-                                earlier comment in run_bird_adapt_eval.sh
-                                said 9, but bird_crossdb_eval_dev.json
-                                actually resolves to 7 unique db_ids,
-                                confirmed by the db_ids print below, which
-                                is computed from the real file, not
-                                hardcoded.)
-
-Also recomputes the original baseline/SFT(spider-only)/RL-v2(spider-only)
-execution accuracy RESTRICTED to just the crossdb-eval db_ids -- not their
-full 1534-example BIRD eval number, which includes the two pool databases
-and would not be a fair comparison against crossdb_transfer's 1381-example
-set. This is the apples-to-apples baseline the new models need to beat.
-
-Usage:
-  python scripts/compare_bird_adapt.py
-"""
-
 import json
 import os
 

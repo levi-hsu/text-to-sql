@@ -1,19 +1,3 @@
-"""Cross-arm error-taxonomy comparison (plan.md, "Error taxonomy"): for each
-of baseline/SFT/RL/RL-v2, on each of Spider eval/BIRD eval, run
-error_taxonomy.py's categorizer against the arm's existing eval_sql.py
-results.json and print category rates side by side -- this is what
-actually answers "which failure modes does SFT reduce, which does RL
-reduce" rather than aggregate accuracy alone. Writes one taxonomy report
-per arm/dataset next to the source results.json, plus a combined
-comparison table.
-
-No training or generation needed -- every input file already exists on
-disk from the runs already completed.
-
-Usage:
-  python scripts/compare_error_taxonomy.py
-"""
-
 import json
 import os
 

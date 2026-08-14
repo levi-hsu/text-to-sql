@@ -1,25 +1,3 @@
-"""Execution-accuracy (EX) evaluator, the primary metric in plan.md.
-
-For each (predicted SQL, gold SQL) pair, both are executed against the
-example's SQLite database and their result sets are compared. A prediction
-counts as correct if it executes without error and returns the same result
-as the gold query. Comparison is order-insensitive by default, except when
-the gold query itself contains an ORDER BY clause, in which case row order
-is required to match too -- this mirrors the convention used by Spider's
-own evaluation scripts and by DIN-SQL/DAIL-SQL's execution-accuracy code.
-
-Each database is opened read-only (SQLite URI mode=ro), so a malformed or
-adversarial prediction (e.g. an INSERT or DROP TABLE) cannot mutate the
-on-disk .sqlite files; it just fails to execute and is scored as incorrect.
-
-Usage:
-  python scripts/eval_sql.py \
-      --pred runs/baseline_qwen2.5coder3b/spider_dev_preds.sql \
-      --gold data/spider_data/dev_gold.sql \
-      --db-dir data/spider_data/database \
-      --output runs/baseline_qwen2.5coder3b/spider_dev_results.json
-"""
-
 import argparse
 import json
 import os

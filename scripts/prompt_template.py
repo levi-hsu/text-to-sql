@@ -1,12 +1,3 @@
-"""Zero-shot text-to-SQL prompt template for Qwen2.5-Coder-Instruct.
-
-No few-shot examples and no chain-of-thought scaffolding on purpose: the
-baseline arm in plan.md is the "same model, no fine-tuning" control, so the
-prompt should be the plainest reasonable instruction-following prompt, not
-one engineered to maximize accuracy. The SFT and RL models are compared
-against this baseline, so keeping it simple keeps the comparison honest.
-"""
-
 from typing import Dict, List
 
 SYSTEM_PROMPT = (

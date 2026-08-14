@@ -1,28 +1,3 @@
-"""Generates the two figures the blog post embeds, from the same numbers
-already printed by compare_models.py and compare_error_taxonomy.py (copied
-here as constants rather than re-parsed from their text output, so this
-stays a simple, auditable script -- if those numbers change, update both
-places, or diff runs/blog_artifacts/experiment1_scorecard.txt and
-experiment1_error_taxonomy.txt against the constants below before trusting
-a regenerated figure).
-
-fig1: execution accuracy by model, Spider eval vs BIRD eval -- the
-      generalization-drop finding.
-fig2: Spider eval error-category mix by model -- the structural-errors-down,
-      value-level-errors-up finding.
-
-Was previously generated ad hoc and not checked into the repo; this is
-that same code, saved so `scripts/run_blog_artifacts.sh` can regenerate
-both figures alongside the tables and galleries whenever the underlying
-numbers change.
-
-Usage:
-  python scripts/make_blog_figures.py
-Output:
-  blog/figures/fig1_execution_accuracy_by_model.png
-  blog/figures/fig2_error_mix_spider_eval.png
-"""
-
 import os
 
 import matplotlib

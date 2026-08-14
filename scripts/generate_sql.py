@@ -1,22 +1,3 @@
-"""Generate SQL predictions for the zero-shot baseline arm.
-
-Loads Qwen2.5-Coder-3B-Instruct (untouched, no fine-tuning) and runs it
-over a Spider/BIRD dev split, one prompt per example, greedy by default.
-Writes two files under <run_dir>/:
-
-  {dataset}_{split}_preds.sql   -- one predicted SQL query per line, in the
-                                    same order as the input examples, so it
-                                    line-aligns with the matching *_gold.sql
-                                    file for eval_sql.py.
-  {dataset}_{split}_raw.jsonl   -- one record per example with the full
-                                    prompt and raw model output, kept for
-                                    debugging and for the error-taxonomy
-                                    analysis described in plan.md.
-
-Usage:
-  python scripts/generate_sql.py --config configs/baseline.yaml --dataset spider --split dev
-"""
-
 import argparse
 import json
 import os

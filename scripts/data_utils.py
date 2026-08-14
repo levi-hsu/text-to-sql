@@ -1,5 +1,3 @@
-"""Shared I/O helpers for the baseline generate/eval scripts."""
-
 import json
 import os
 from typing import Dict, List, Optional, Tuple

@@ -1,18 +1,3 @@
-"""Build the held-out slice scripts/rl_health_callback.py generates against
-during RL training (configs/rl.yaml's monitor.heldout_jsonl, an open item
-until this script existed). Drawn from Spider-dev, in the same
-{db_id, question, schema, gold_sql} shape build_sft_data.py already uses.
-
-No train/monitor leakage: the RL arm trains on data/sft/spider_train_subset.jsonl
-(Spider-train), entirely disjoint from Spider-dev by construction of the
-Spider split -- this is the same dev set generate_sql.py/eval_sql.py already
-use for the SFT and baseline models' offline evaluation, just re-purposed here
-for a cheap in-training health check, not a new held-out source.
-
-Usage:
-  python scripts/build_rl_heldout.py --size 50 --output data/sft/rl_heldout.jsonl
-"""
-
 import argparse
 import json
 

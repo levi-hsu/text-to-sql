@@ -1,33 +1,3 @@
-"""Print a side-by-side execution-accuracy comparison across all models
-(baseline, SFT, RL, RL-v2) on both Spider eval (in-distribution) and
-BIRD eval (out-of-distribution), reading each arm's eval_sql.py summary
-directly rather than re-deriving numbers by hand. Also prints the
-Spider-to-BIRD accuracy drop per arm -- the generalization measure
-plan.md's "Metrics" section defines: a smaller drop means better
-generalization from that post-training method.
-
-NOTE on naming: "Spider eval" / "BIRD eval" are display labels only, used
-in the printed output below. The underlying files are still
-data/spider_data/dev.json and data/bird-dev/dev.json (Spider's and BIRD's
-own "dev" split), and the *_dev_results.json paths in models below are left
-unchanged -- renaming those would mean renaming actual run directories and
-every config that references them. Only what gets printed changed, because
-"dev" reads as "used to tune something" when both are actually the only
-number ever reported for that arm on that set.
-
-rl_v2 is the second RL run (configs/rl.yaml): started from the SFT arm's
-checkpoint-500 instead of its fully-converged final adapter,
-num_generations raised 2->4, and a small partial-credit reward term added
-on top of the unchanged execution-match objective -- see configs/rl.yaml's
-header comment for the full rationale. rl (v1) scored Spider eval EX
-identical to SFT (0.6973, bit-for-bit the same predictions on 1021/1034
-examples) and a worse Spider->BIRD drop than baseline; rl_v2 exists to test
-whether those three changes fix that.
-
-Usage:
-  python scripts/compare_models.py
-"""
-
 import json
 import os
 
